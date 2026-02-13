@@ -1,0 +1,3916 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💰 Controle Financeiro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --bg: #f8fafc;
+            --bg-secondary: #f1f5f9;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* APP CONTAINER */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 280px;
+            background: var(--white);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-header {
+            padding: 30px 25px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: var(--text-light);
+            text-decoration: none;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .nav-link.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            border-left-color: var(--primary);
+            font-weight: 700;
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            width: 30px;
+            text-align: center;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 25px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .top-header h1 {
+            font-size: 1.8rem;
+            color: var(--text);
+        }
+
+        .page-content {
+            flex: 1;
+            padding: 40px;
+        }
+
+        /* CARDS */
+        .card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlide 0.3s ease;
+        }
+
+        @keyframes modalSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--text-light);
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--bg);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        /* FORMS */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text);
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* GRID */
+        .grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        /* CONTA CARD */
+        .conta-card {
+            background: linear-gradient(135deg, var(--conta-cor) 0%, var(--conta-cor-dark) 100%);
+            border-radius: 16px;
+            padding: 25px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .conta-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .conta-nome {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .conta-saldo {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .conta-tipo {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        /* CATEGORIA ITEM */
+        .categoria-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: var(--bg);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+
+        .categoria-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .categoria-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .categoria-icon {
+            font-size: 2rem;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: var(--white);
+        }
+
+        .categoria-nome {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .categoria-tipo {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        /* TRANSACAO ITEM */
+        .transacao-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: var(--bg);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+
+        .transacao-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .transacao-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .transacao-icon {
+            font-size: 1.8rem;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: var(--white);
+        }
+
+        .transacao-desc {
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin-bottom: 5px;
+        }
+
+        .transacao-data {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .transacao-valor {
+            font-weight: 800;
+            font-size: 1.3rem;
+        }
+
+        .transacao-valor.receita {
+            color: var(--success);
+        }
+
+        .transacao-valor.despesa {
+            color: var(--danger);
+        }
+
+        /* BADGES */
+        .badge {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        /* LOADING */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+        }
+
+        /* CORES PRÉ-DEFINIDAS */
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: var(--text);
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .grid-2,
+            .grid-3,
+            .grid-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- TELA DE AUTENTICAÇÃO -->
+    <div id="auth-screen" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 400px; width: 90%;">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="font-size: 3rem; margin-bottom: 10px;">💰</h1>
+                <h2 style="color: var(--primary); margin-bottom: 5px;">FinanControl</h2>
+                <p style="color: var(--text-light); font-size: 0.9rem;">Controle suas finanças de forma simples</p>
+            </div>
+            
+            <!-- FORMULÁRIO DE LOGIN -->
+            <div id="login-form">
+                <form id="form-login" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: var(--text);">Email</label>
+                        <input type="email" id="login-email" class="form-input" placeholder="seu@email.com" required style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: var(--text);">Senha</label>
+                        <input type="password" id="login-senha" class="form-input" placeholder="••••••••" required style="width: 100%;">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">Entrar</button>
+                </form>
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="#" onclick="mostrarRecuperarSenha(); return false;" style="color: var(--primary); font-size: 0.9rem;">Esqueci minha senha</a>
+                </div>
+                <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+                    <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 10px;">Não tem uma conta?</p>
+                    <button onclick="mostrarCadastro()" class="btn" style="background: var(--success); color: white; width: 100%;">Criar Conta</button>
+                </div>
+            </div>
+            
+            <!-- FORMULÁRIO DE CADASTRO -->
+            <div id="cadastro-form" style="display: none;">
+                <form id="form-cadastro" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: var(--text);">Nome</label>
+                        <input type="text" id="cadastro-nome" class="form-input" placeholder="Seu nome" required style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: var(--text);">Email</label>
+                        <input type="email" id="cadastro-email" class="form-input" placeholder="seu@email.com" required style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: var(--text);">Senha</label>
+                        <input type="password" id="cadastro-senha" class="form-input" placeholder="Mínimo 6 caracteres" required minlength="6" style="width: 100%;">
+                    </div>
+                    <button type="submit" class="btn btn-success" style="width: 100%; padding: 12px;">Criar Conta</button>
+                </form>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="mostrarLogin()" class="btn" style="background: transparent; color: var(--primary); width: 100%;">← Voltar para Login</button>
+                </div>
+            </div>
+            
+            <!-- FORMULÁRIO DE RECUPERAR SENHA -->
+            <div id="recuperar-form" style="display: none;">
+                <form id="form-recuperar" style="display: flex; flex-direction: column; gap: 15px;">
+                    <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 10px;">Digite seu email para receber o link de recuperação de senha</p>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: var(--text);">Email</label>
+                        <input type="email" id="recuperar-email" class="form-input" placeholder="seu@email.com" required style="width: 100%;">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">Enviar Link</button>
+                </form>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="mostrarLogin()" class="btn" style="background: transparent; color: var(--primary); width: 100%;">← Voltar para Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="app-container" id="app-container" style="display: none;">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>💰 FinanControl</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-link active" data-page="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-link" data-page="contas">
+                    <span class="nav-icon">🏦</span>
+                    <span>Contas</span>
+                </div>
+                <div class="nav-link" data-page="categorias">
+                    <span class="nav-icon">🏷️</span>
+                    <span>Categorias</span>
+                </div>
+                <div class="nav-link" data-page="transacoes">
+                    <span class="nav-icon">💳</span>
+                    <span>Transações</span>
+                </div>
+                <div class="nav-link" data-page="recorrentes">
+                    <span class="nav-icon">🔄</span>
+                    <span>Recorrentes</span>
+                </div>
+                <div class="nav-link" data-page="parcelados">
+                    <span class="nav-icon">💰</span>
+                    <span>Parcelados</span>
+                </div>
+                <div class="nav-link" data-page="orcamentos">
+                    <span class="nav-icon">🎯</span>
+                    <span>Orçamentos</span>
+                </div>
+                <div class="nav-link" data-page="relatorios">
+                    <span class="nav-icon">📊</span>
+                    <span>Relatórios</span>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- CONTEÚDO -->
+        <main class="main-content">
+            <header class="top-header">
+                <h1 id="page-title">Dashboard</h1>
+                <div id="user-info" style="display: flex; align-items: center; gap: 15px;">
+                    <span id="user-email" style="color: var(--text-light); font-size: 0.9rem;"></span>
+                    <button onclick="fazerLogout()" class="btn btn-sm" style="background: var(--danger); color: white;">🚪 Sair</button>
+                </div>
+            </header>
+
+            <div id="page-content" class="page-content">
+                <!-- Conteúdo carregado via JS -->
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL NOVA CONTA -->
+    <div id="modal-conta" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nova Conta</h3>
+                <button class="modal-close" onclick="closeModal('modal-conta')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-conta">
+                    <div class="form-group">
+                        <label class="form-label">Nome da Conta</label>
+                        <input type="text" class="form-input" id="conta-nome" placeholder="Ex: Nubank, Carteira, Poupança" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo</label>
+                        <select class="form-select" id="conta-tipo" required>
+                            <option value="corrente">Conta Corrente</option>
+                            <option value="poupanca">Poupança</option>
+                            <option value="carteira">Carteira</option>
+                            <option value="investimento">Investimento</option>
+                            <option value="cartaoCredito">💳 Cartão de Crédito</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" id="conta-saldo-label">Saldo Inicial (R$)</label>
+                        <input type="number" class="form-input" id="conta-saldo" step="0.01" value="0" required>
+                        <small style="color: var(--text-light); font-size: 0.85rem; margin-top: 5px; display: none;" id="conta-saldo-hint">
+                            Para cartão de crédito, informe o limite total do cartão
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Cor</label>
+                        <div class="color-grid" id="conta-cores">
+                            <div class="color-option selected" style="background: #6366f1" data-cor="#6366f1"></div>
+                            <div class="color-option" style="background: #10b981" data-cor="#10b981"></div>
+                            <div class="color-option" style="background: #f59e0b" data-cor="#f59e0b"></div>
+                            <div class="color-option" style="background: #ef4444" data-cor="#ef4444"></div>
+                            <div class="color-option" style="background: #8b5cf6" data-cor="#8b5cf6"></div>
+                            <div class="color-option" style="background: #ec4899" data-cor="#ec4899"></div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%">Criar Conta</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NOVA CATEGORIA -->
+    <div id="modal-categoria" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nova Categoria</h3>
+                <button class="modal-close" onclick="closeModal('modal-categoria')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-categoria">
+                    <div class="form-group">
+                        <label class="form-label">Nome da Categoria</label>
+                        <input type="text" class="form-input" id="categoria-nome" placeholder="Ex: Alimentação, Transporte" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo</label>
+                        <select class="form-select" id="categoria-tipo" required>
+                            <option value="despesa">Despesa</option>
+                            <option value="receita">Receita</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ícone (Emoji)</label>
+                        <input type="text" class="form-input" id="categoria-icone" placeholder="Ex: 🍔 🚗 💼" maxlength="2" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%">Criar Categoria</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NOVA TRANSAÇÃO -->
+    <div id="modal-transacao" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nova Transação</h3>
+                <button class="modal-close" onclick="closeModal('modal-transacao')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-transacao">
+                    <div class="form-group">
+                        <label class="form-label">Tipo</label>
+                        <select class="form-select" id="transacao-tipo" required>
+                            <option value="despesa">Despesa</option>
+                            <option value="receita">Receita</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descricao</label>
+                        <input type="text" class="form-input" id="transacao-descricao" placeholder="Ex: Mercado, Salário" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Valor (R$)</label>
+                        <input type="number" class="form-input" id="transacao-valor" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Categoria</label>
+                        <select class="form-select" id="transacao-categoria" required>
+                            <option value="">Carregando...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Conta</label>
+                        <select class="form-select" id="transacao-conta" required>
+                            <option value="">Carregando...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Data</label>
+                        <input type="date" class="form-input" id="transacao-data" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="transacao-status" required>
+                            <option value="pago">Pago</option>
+                            <option value="pendente">Pendente</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%">Criar Transação</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NOVA RECORRENTE -->
+    <div id="modal-recorrente" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nova Recorrente</h3>
+                <button class="modal-close" onclick="closeModal('modal-recorrente')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-recorrente">
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Recorrente</label>
+                        <select class="form-select" id="recorrente-tipo" required onchange="handleTipoRecorrenteChange()">
+                            <option value="">Selecione o tipo</option>
+                            <option value="receitaVariavel">💰 Receita Variável (ex: Salário com comissão)</option>
+                            <option value="despesaFixa">💵 Despesa Fixa (ex: Aluguel, Netflix)</option>
+                            <option value="despesaVariavel">💡 Despesa Variável (ex: Luz, Água)</option>
+                            <option value="faturaCartao">💳 Fatura de Cartão (valor variável)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descricao</label>
+                        <input type="text" class="form-input" id="recorrente-descricao" placeholder="Ex: Salário, Aluguel, Conta de Luz" required>
+                    </div>
+                    <div class="form-group" id="recorrente-valor-group">
+                        <label class="form-label">Valor Fixo (R$)</label>
+                        <input type="number" class="form-input" id="recorrente-valor" step="0.01" placeholder="Deixe 0 para variáveis">
+                        <small style="color: var(--text-light); font-size: 0.85rem; margin-top: 5px; display: block;" id="recorrente-valor-hint">
+                            Para receitas/despesas variáveis, deixe em 0
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Categoria</label>
+                        <select class="form-select" id="recorrente-categoria" required>
+                            <option value="">Selecione uma categoria</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Conta</label>
+                        <select class="form-select" id="recorrente-conta" required>
+                            <option value="">Selecione uma conta</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Dia do Vencimento</label>
+                        <input type="number" class="form-input" id="recorrente-dia" min="1" max="31" placeholder="Ex: 5, 10, 15" required>
+                        <small style="color: var(--text-light); font-size: 0.85rem; margin-top: 5px; display: block;">
+                            A transação será gerada todo dia escolhido do mês
+                        </small>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%">Criar Recorrente</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NOVA COMPRA PARCELADA -->
+    <div id="modal-parcelado" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nova Compra Parcelada</h3>
+                <button class="modal-close" onclick="closeModal('modal-parcelado')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-parcelado">
+                    <div class="form-group">
+                        <label class="form-label">Descricao da Compra</label>
+                        <input type="text" class="form-input" id="parcelado-descricao" placeholder="Ex: Notebook Dell, iPhone 15" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Valor Total (R$)</label>
+                        <input type="number" class="form-input" id="parcelado-valor-total" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Número de Parcelas</label>
+                        <input type="number" class="form-input" id="parcelado-parcelas" min="2" max="48" placeholder="Ex: 12" required>
+                    </div>
+                    <div class="form-group" style="background: var(--bg); padding: 15px; border-radius: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 600;">Valor de cada parcela:</span>
+                            <span id="parcelado-valor-parcela" style="font-size: 1.3rem; font-weight: 800; color: var(--primary);">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Categoria</label>
+                        <select class="form-select" id="parcelado-categoria" required>
+                            <option value="">Selecione uma categoria</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Cartão de Crédito</label>
+                        <select class="form-select" id="parcelado-conta" required>
+                            <option value="">Selecione um cartão</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Data da Primeira Parcela</label>
+                        <input type="date" class="form-input" id="parcelado-data-inicio" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%">Criar Parcelamento</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NOVO ORÇAMENTO -->
+    <div id="modal-orcamento" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Novo Orçamento</h3>
+                <button class="modal-close" onclick="closeModal('modal-orcamento')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-orcamento">
+                    <div class="form-group">
+                        <label class="form-label">Mês/Ano</label>
+                        <input type="month" class="form-input" id="orcamento-mes" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Categoria de Despesa</label>
+                        <select class="form-select" id="orcamento-categoria" required>
+                            <option value="">Selecione uma categoria</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Limite de Gastos (R$)</label>
+                        <input type="number" class="form-input" id="orcamento-limite" step="0.01" placeholder="Ex: 800.00" required>
+                        <small style="color: var(--text-light); font-size: 0.85rem; margin-top: 5px; display: block;">
+                            Valor máximo que você quer gastar nesta categoria este mês
+                        </small>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%">Criar Orçamento</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JSPDF e HTML2CANVAS para PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- CHART.JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- FIREBASE -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, deleteDoc, doc, updateDoc, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+
+        // CONFIGURAÇÃO FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyAWytSMh6Sd-HrU9VBkZ48c0Moq0Nq6XGM",
+            authDomain: "financeiro-app-2e3c9.firebaseapp.com",
+            projectId: "financeiro-app-2e3c9",
+            storageBucket: "financeiro-app-2e3c9.firebasestorage.app",
+            messagingSenderId: "412111224272",
+            appId: "1:412111224272:web:deefa30b0c180d0b468dd5",
+            measurementId: "G-7J42S09K4X"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Tornar disponível globalmente
+        window.db = db;
+        window.auth = auth;
+        window.currentUser = null;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.getDocs = getDocs;
+        window.query = query;
+        window.orderBy = orderBy;
+        window.deleteDoc = deleteDoc;
+        window.doc = doc;
+        window.updateDoc = updateDoc;
+        window.where = where;
+        window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+        window.signOut = signOut;
+        window.onAuthStateChanged = onAuthStateChanged;
+        window.sendPasswordResetEmail = sendPasswordResetEmail;
+    </script>
+
+    <script>
+        // ===== NAVEGAÇÃO =====
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                
+                const page = link.dataset.page;
+                document.getElementById('page-title').textContent = link.textContent.trim();
+                
+                switch(page) {
+                    case 'dashboard': loadDashboard(); break;
+                    case 'contas': loadContas(); break;
+                    case 'categorias': loadCategorias(); break;
+                    case 'transacoes': loadTransacoes(); break;
+                    case 'recorrentes': loadRecorrentes(); break;
+                    case 'parcelados': loadParcelados(); break;
+                    case 'orcamentos': loadOrcamentos(); break;
+                    case 'relatorios': loadRelatorios(); break;
+                }
+            });
+        });
+
+        // ===== MODALS =====
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        window.closeModal = closeModal;
+
+        // ===== DASHBOARD =====
+        async function loadDashboard() {
+            const content = document.getElementById('page-content');
+            content.innerHTML = `<div class="loading">Carregando dashboard...</div>`;
+            
+            try {
+                // Buscar todas as contas
+                const contasSnap = await getDocs(getUserCollection('contas'));
+                
+                // Buscar transações do mês atual
+                const hoje = new Date();
+                const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+                const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+                
+                const transacoesSnap = await getDocs(getUserCollection('transacoes'));
+                const categoriasSnap = await getDocs(getUserCollection('categorias'));
+                
+                // Mapear categorias
+                const categorias = {};
+                categoriasSnap.forEach(doc => {
+                    categorias[doc.id] = doc.data();
+                });
+                
+                // Calcular totais
+                let saldoTotal = 0;
+                let receitasMes = 0;
+                let despesasMes = 0;
+                const transacoesMes = [];
+                const transacoesPendentes = [];
+                const gastosPorCategoria = {};
+                
+                contasSnap.forEach(doc => {
+                    saldoTotal += parseFloat(doc.data().saldoInicial || 0);
+                });
+                
+                transacoesSnap.forEach(doc => {
+                    const trans = { id: doc.id, ...doc.data() };
+                    const dataTrans = new Date(trans.data + 'T00:00:00');
+                    
+                    // Transações do mês atual
+                    if (dataTrans >= primeiroDiaMes && dataTrans <= ultimoDiaMes) {
+                        transacoesMes.push(trans);
+                        
+                        if (trans.status === 'pago') {
+                            if (trans.tipo === 'receita') {
+                                receitasMes += parseFloat(trans.valor);
+                                saldoTotal += parseFloat(trans.valor);
+                            } else {
+                                despesasMes += parseFloat(trans.valor);
+                                saldoTotal -= parseFloat(trans.valor);
+                                
+                                // Contar gastos por categoria
+                                const catId = trans.categoriaId;
+                                if (!gastosPorCategoria[catId]) {
+                                    gastosPorCategoria[catId] = 0;
+                                }
+                                gastosPorCategoria[catId] += parseFloat(trans.valor);
+                            }
+                        }
+                        
+                        // Pendentes
+                        if (trans.status === 'pendente') {
+                            transacoesPendentes.push(trans);
+                        }
+                    }
+                    
+                    // Ajustar saldo total com transações pagas de outros meses
+                    if (dataTrans < primeiroDiaMes && trans.status === 'pago') {
+                        if (trans.tipo === 'receita') {
+                            saldoTotal += parseFloat(trans.valor);
+                        } else {
+                            saldoTotal -= parseFloat(trans.valor);
+                        }
+                    }
+                });
+                
+                const balanco = receitasMes - despesasMes;
+                const balancoClass = balanco >= 0 ? 'positive' : 'negative';
+                const balancoIcon = balanco >= 0 ? '↑' : '↓';
+                
+                // Ordenar transações por data (mais recentes primeiro)
+                transacoesMes.sort((a, b) => new Date(b.data) - new Date(a.data));
+                const ultimasTransacoes = transacoesMes.slice(0, 5);
+                
+                // Top 5 categorias com mais gastos
+                const topCategorias = Object.entries(gastosPorCategoria)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5);
+                
+                // Montar HTML
+                let htmlTransacoes = '';
+                if (ultimasTransacoes.length === 0) {
+                    htmlTransacoes = '<div style="padding: 20px; text-align: center; color: var(--text-light);">Nenhuma transação este mês</div>';
+                } else {
+                    ultimasTransacoes.forEach(trans => {
+                        const cat = categorias[trans.categoriaId] || { icone: '❓', nome: 'Sem categoria' };
+                        const valorClass = trans.tipo === 'receita' ? 'receita' : 'despesa';
+                        const sinal = trans.tipo === 'receita' ? '+' : '-';
+                        
+                        htmlTransacoes += `
+                            <div class="transacao-item" style="margin-bottom: 10px;">
+                                <div class="transacao-left">
+                                    <div class="transacao-icon" style="width: 45px; height: 45px; font-size: 1.5rem;">${cat.icone}</div>
+                                    <div>
+                                        <div class="transacao-desc" style="font-size: 1rem;">${trans.descricao}</div>
+                                        <div class="transacao-data" style="font-size: 0.8rem;">${formatDate(trans.data)}</div>
+                                    </div>
+                                </div>
+                                <div class="transacao-valor ${valorClass}" style="font-size: 1.1rem;">
+                                    ${sinal} R$ ${parseFloat(trans.valor).toFixed(2)}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                let htmlPendentes = '';
+                if (transacoesPendentes.length === 0) {
+                    htmlPendentes = '<div style="padding: 20px; text-align: center; color: var(--text-light);">Nenhuma conta pendente! 🎉</div>';
+                } else {
+                    transacoesPendentes.slice(0, 5).forEach(trans => {
+                        const cat = categorias[trans.categoriaId] || { nome: 'Sem categoria' };
+                        const dataTrans = new Date(trans.data + 'T00:00:00');
+                        const diasRestantes = Math.ceil((dataTrans - hoje) / (1000 * 60 * 60 * 24));
+                        
+                        let corBorda = 'var(--success)';
+                        let textoDias = `Vence em ${diasRestantes} dias`;
+                        
+                        if (diasRestantes < 0) {
+                            corBorda = 'var(--danger)';
+                            textoDias = `Vencido há ${Math.abs(diasRestantes)} dias`;
+                        } else if (diasRestantes <= 3) {
+                            corBorda = 'var(--warning)';
+                            textoDias = diasRestantes === 0 ? 'Vence hoje!' : `Vence em ${diasRestantes} dias`;
+                        } else if (diasRestantes <= 7) {
+                            corBorda = 'var(--info)';
+                        }
+                        
+                        htmlPendentes += `
+                            <div style="padding: 15px; border-left: 4px solid ${corBorda}; background: rgba(0,0,0,0.02); border-radius: 8px; margin-bottom: 10px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div style="font-weight: 700; margin-bottom: 5px;">${trans.descricao}</div>
+                                        <div style="font-size: 0.85rem; color: var(--text-light);">${textoDias} • ${cat.nome}</div>
+                                    </div>
+                                    <div style="font-weight: 800; font-size: 1.1rem; color: var(--danger);">R$ ${parseFloat(trans.valor).toFixed(2)}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                let htmlCategorias = '';
+                if (topCategorias.length === 0) {
+                    htmlCategorias = '<div style="padding: 20px; text-align: center; color: var(--text-light);">Nenhum gasto registrado</div>';
+                } else {
+                    topCategorias.forEach(([catId, valor]) => {
+                        const cat = categorias[catId] || { icone: '❓', nome: 'Sem categoria' };
+                        const percentual = ((valor / despesasMes) * 100).toFixed(1);
+                        
+                        htmlCategorias += `
+                            <div style="margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 1.5rem;">${cat.icone}</span>
+                                        <span style="font-weight: 600;">${cat.nome}</span>
+                                    </div>
+                                    <div style="font-weight: 700; color: var(--danger);">R$ ${valor.toFixed(2)}</div>
+                                </div>
+                                <div style="background: var(--bg); height: 8px; border-radius: 10px; overflow: hidden;">
+                                    <div style="background: var(--danger); height: 100%; width: ${percentual}%; border-radius: 10px;"></div>
+                                </div>
+                                <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 5px;">${percentual}% do total</div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                content.innerHTML = `
+                    <div class="grid grid-4" style="margin-bottom: 30px;">
+                        <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px;">
+                            <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 10px;">💰 Saldo Total</div>
+                            <div style="font-size: 2.2rem; font-weight: 800; margin-bottom: 10px;">R$ ${saldoTotal.toFixed(2)}</div>
+                            <div style="font-size: 0.85rem; opacity: 0.8;">Todas as contas</div>
+                        </div>
+                        
+                        <div class="card" style="padding: 25px;">
+                            <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 10px;">📈 Receitas do Mês</div>
+                            <div style="font-size: 2.2rem; font-weight: 800; color: var(--success); margin-bottom: 10px;">R$ ${receitasMes.toFixed(2)}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-light);">${hoje.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</div>
+                        </div>
+                        
+                        <div class="card" style="padding: 25px;">
+                            <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 10px;">📉 Despesas do Mês</div>
+                            <div style="font-size: 2.2rem; font-weight: 800; color: var(--danger); margin-bottom: 10px;">R$ ${despesasMes.toFixed(2)}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-light);">${hoje.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</div>
+                        </div>
+                        
+                        <div class="card" style="padding: 25px;">
+                            <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 10px;">💵 Balanço do Mês</div>
+                            <div style="font-size: 2.2rem; font-weight: 800; color: ${balanco >= 0 ? 'var(--success)' : 'var(--danger)'}; margin-bottom: 10px;">R$ ${Math.abs(balanco).toFixed(2)}</div>
+                            <div class="stats-change ${balancoClass}" style="font-size: 0.85rem;">${balancoIcon} ${balanco >= 0 ? 'Superavit' : 'Deficit'}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-2">
+                        <div class="card">
+                            <div class="card-header" style="margin-bottom: 15px;">
+                                <h3 class="card-title" style="font-size: 1.2rem;">Últimas Transações</h3>
+                                <button class="btn btn-primary btn-sm" onclick="document.querySelector('[data-page=transacoes]').click()">Ver Todas</button>
+                            </div>
+                            ${htmlTransacoes}
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header" style="margin-bottom: 15px;">
+                                <h3 class="card-title" style="font-size: 1.2rem;">Contas Pendentes</h3>
+                                <span class="badge ${transacoesPendentes.length > 0 ? 'badge-danger' : 'badge-success'}">${transacoesPendentes.length}</span>
+                            </div>
+                            ${htmlPendentes}
+                        </div>
+                    </div>
+                    
+                    ${topCategorias.length > 0 ? `
+                    <div class="card" style="margin-top: 25px;">
+                        <div class="card-header" style="margin-bottom: 15px;">
+                            <h3 class="card-title" style="font-size: 1.2rem;">🏆 Top Categorias - Despesas</h3>
+                        </div>
+                        ${htmlCategorias}
+                    </div>
+                    ` : ''}
+                `;
+                
+            } catch (error) {
+                console.error('Erro ao carregar dashboard:', error);
+                content.innerHTML = `
+                    <div class="card">
+                        <div style="padding: 20px; color: var(--danger);">
+                            Erro ao carregar dashboard: ${error.message}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // ===== CONTAS =====
+        async function loadContas() {
+            const content = document.getElementById('page-content');
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Minhas Contas</h3>
+                        <button class="btn btn-primary" onclick="openModal('modal-conta')">+ Nova Conta</button>
+                    </div>
+                    <div class="loading">Carregando contas...</div>
+                </div>
+            `;
+
+            try {
+                const q = query(getUserCollection('contas'), orderBy('nome'));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    content.innerHTML = `
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Minhas Contas</h3>
+                                <button class="btn btn-primary" onclick="openModal('modal-conta')">+ Nova Conta</button>
+                            </div>
+                            <div class="empty-state">
+                                <div class="empty-state-icon">🏦</div>
+                                <div class="empty-state-text">Você ainda não tem contas cadastradas</div>
+                                <button class="btn btn-primary" onclick="openModal('modal-conta')">Criar Primeira Conta</button>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let contasHTML = '';
+                snapshot.forEach(doc => {
+                    const conta = doc.data();
+                    const corDark = adjustColor(conta.cor, -20);
+                    contasHTML += `
+                        <div class="conta-card" style="--conta-cor: ${conta.cor}; --conta-cor-dark: ${corDark}; position: relative;">
+                            <div style="position: absolute; top: 15px; right: 15px; display: flex; gap: 8px;">
+                                <button onclick="editarConta('${doc.id}')" style="background: rgba(255,255,255,0.3); border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; color: white; font-weight: 700; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.5)'" onmouseout="this.style.background='rgba(255,255,255,0.3)'">✏️</button>
+                                <button onclick="deletarConta('${doc.id}', '${conta.nome}')" style="background: rgba(255,255,255,0.3); border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; color: white; font-weight: 700; transition: all 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.8)'" onmouseout="this.style.background='rgba(255,255,255,0.3)'">🗑️</button>
+                            </div>
+                            <div class="conta-nome">${conta.nome}</div>
+                            <div class="conta-saldo">R$ ${parseFloat(conta.saldoInicial).toFixed(2)}</div>
+                            <div class="conta-tipo">${formatTipo(conta.tipo)}</div>
+                        </div>
+                    `;
+                });
+
+                content.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Minhas Contas</h3>
+                            <button class="btn btn-primary" onclick="openModal('modal-conta')">+ Nova Conta</button>
+                        </div>
+                        <div class="grid grid-3">
+                            ${contasHTML}
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Erro ao carregar contas:', error);
+                content.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Minhas Contas</h3>
+                            <button class="btn btn-primary" onclick="openModal('modal-conta')">+ Nova Conta</button>
+                        </div>
+                        <div style="padding: 20px; color: var(--danger);">Erro ao carregar contas: ${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // ===== CATEGORIAS =====
+        async function loadCategorias() {
+            const content = document.getElementById('page-content');
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Categorias</h3>
+                        <button class="btn btn-primary" onclick="openModal('modal-categoria')">+ Nova Categoria</button>
+                    </div>
+                    <div class="loading">Carregando categorias...</div>
+                </div>
+            `;
+
+            try {
+                const q = query(getUserCollection('categorias'), orderBy('nome'));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    content.innerHTML = `
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Categorias</h3>
+                                <button class="btn btn-primary" onclick="openModal('modal-categoria')">+ Nova Categoria</button>
+                            </div>
+                            <div class="empty-state">
+                                <div class="empty-state-icon">🏷️</div>
+                                <div class="empty-state-text">Você ainda não tem categorias cadastradas</div>
+                                <button class="btn btn-primary" onclick="openModal('modal-categoria')">Criar Primeira Categoria</button>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let categoriasHTML = '';
+                snapshot.forEach(doc => {
+                    const cat = doc.data();
+                    categoriasHTML += `
+                        <div class="categoria-item">
+                            <div class="categoria-info">
+                                <div class="categoria-icon">${cat.icone}</div>
+                                <div>
+                                    <div class="categoria-nome">${cat.nome}</div>
+                                    <div class="categoria-tipo">
+                                        <span class="badge ${cat.tipo === 'receita' ? 'badge-success' : 'badge-danger'}">
+                                            ${cat.tipo === 'receita' ? 'Receita' : 'Despesa'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="editarCategoria('${doc.id}')" class="btn btn-sm" style="background: var(--info); color: white;">✏️ Editar</button>
+                                <button onclick="deletarCategoria('${doc.id}', '${cat.nome}')" class="btn btn-sm btn-danger">🗑️ Deletar</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                content.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Categorias</h3>
+                            <button class="btn btn-primary" onclick="openModal('modal-categoria')">+ Nova Categoria</button>
+                        </div>
+                        ${categoriasHTML}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Erro ao carregar categorias:', error);
+                content.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Categorias</h3>
+                            <button class="btn btn-primary" onclick="openModal('modal-categoria')">+ Nova Categoria</button>
+                        </div>
+                        <div style="padding: 20px; color: var(--danger);">Erro ao carregar categorias: ${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // ===== TRANSAÇÕES =====
+        async function loadTransacoes() {
+            const content = document.getElementById('page-content');
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Transações</h3>
+                        <button class="btn btn-primary" onclick="openModalTransacao()">+ Nova Transação</button>
+                    </div>
+                    <div class="loading">Carregando transações...</div>
+                </div>
+            `;
+
+            try {
+                const q = query(getUserCollection('transacoes'), orderBy('data', 'desc'));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    content.innerHTML = `
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Transações</h3>
+                                <button class="btn btn-primary" onclick="openModalTransacao()">+ Nova Transação</button>
+                            </div>
+                            <div class="empty-state">
+                                <div class="empty-state-icon">💳</div>
+                                <div class="empty-state-text">Você ainda não tem transações cadastradas</div>
+                                <button class="btn btn-primary" onclick="openModalTransacao()">Criar Primeira Transação</button>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Buscar categorias e contas para exibir os nomes
+                const categoriasSnap = await getDocs(getUserCollection('categorias'));
+                const contasSnap = await getDocs(getUserCollection('contas'));
+                
+                const categorias = {};
+                const contas = {};
+                
+                categoriasSnap.forEach(doc => {
+                    categorias[doc.id] = doc.data();
+                });
+                
+                contasSnap.forEach(doc => {
+                    contas[doc.id] = doc.data();
+                });
+
+                let transacoesHTML = '';
+                snapshot.forEach(doc => {
+                    const trans = doc.data();
+                    const categoria = categorias[trans.categoriaId] || { icone: '❓', nome: 'Sem categoria' };
+                    const valorClass = trans.tipo === 'receita' ? 'receita' : 'despesa';
+                    const sinal = trans.tipo === 'receita' ? '+' : '-';
+                    
+                    transacoesHTML += `
+                        <div class="transacao-item">
+                            <div class="transacao-left">
+                                <div class="transacao-icon">${categoria.icone}</div>
+                                <div>
+                                    <div class="transacao-desc">${trans.descricao}</div>
+                                    <div class="transacao-data">${formatDate(trans.data)} • ${categoria.nome}</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div class="transacao-valor ${valorClass}">
+                                    ${sinal} R$ ${parseFloat(trans.valor).toFixed(2)}
+                                </div>
+                                ${trans.status === 'pendente' ? `
+                                    <button onclick="pagarTransacao('${doc.id}', '${trans.descricao}')" class="btn btn-sm btn-success" style="padding: 6px 12px; white-space: nowrap;">
+                                        💳 Pagar
+                                    </button>
+                                ` : ''}
+                                <div style="display: flex; gap: 8px;">
+                                    <button onclick="editarTransacao('${doc.id}')" class="btn btn-sm" style="background: var(--info); color: white; padding: 6px 10px;">✏️</button>
+                                    <button onclick="deletarTransacao('${doc.id}', '${trans.descricao}')" class="btn btn-sm btn-danger" style="padding: 6px 10px;">🗑️</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                content.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Transações</h3>
+                            <button class="btn btn-primary" onclick="openModalTransacao()">+ Nova Transação</button>
+                        </div>
+                        ${transacoesHTML}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Erro ao carregar transações:', error);
+                content.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Transações</h3>
+                            <button class="btn btn-primary" onclick="openModalTransacao()">+ Nova Transação</button>
+                        </div>
+                        <div style="padding: 20px; color: var(--danger);">Erro ao carregar transações: ${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // ===== FORM CONTA =====
+        let corSelecionada = '#6366f1';
+
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                corSelecionada = this.dataset.cor;
+            });
+        });
+        
+        // Listener para mudar label quando selecionar cartão de crédito
+        document.getElementById('conta-tipo').addEventListener('change', function() {
+            const label = document.getElementById('conta-saldo-label');
+            const hint = document.getElementById('conta-saldo-hint');
+            
+            if (this.value === 'cartaoCredito') {
+                label.textContent = 'Limite do Cartão (R$)';
+                hint.style.display = 'block';
+            } else {
+                label.textContent = 'Saldo Inicial (R$)';
+                hint.style.display = 'none';
+            }
+        });
+
+        document.getElementById('form-conta').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btnSubmit = e.target.querySelector('button[type="submit"]');
+            btnSubmit.disabled = true;
+            const textoOriginal = btnSubmit.textContent;
+            btnSubmit.textContent = contaEditandoId ? 'Salvando...' : 'Criando...';
+
+            try {
+                const dados = {
+                    nome: document.getElementById('conta-nome').value,
+                    tipo: document.getElementById('conta-tipo').value,
+                    saldoInicial: parseFloat(document.getElementById('conta-saldo').value),
+                    cor: corSelecionada,
+                    ativa: true
+                };
+                
+                if (contaEditandoId) {
+                    // EDITAR
+                    await updateDoc(doc(db, `users/${window.currentUser.uid}/contas`, contaEditandoId), dados);
+                    alert('Conta atualizada com sucesso!');
+                    contaEditandoId = null;
+                } else {
+                    // CRIAR
+                    dados.dataCriacao = new Date().toISOString();
+                    await addDoc(getUserCollection('contas'), dados);
+                    alert('Conta criada com sucesso!');
+                }
+
+                closeModal('modal-conta');
+                e.target.reset();
+                corSelecionada = '#6366f1';
+                document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+                document.querySelector('.color-option').classList.add('selected');
+                
+                // Resetar modal
+                document.querySelector('#modal-conta .modal-title').textContent = 'Nova Conta';
+                document.querySelector('#form-conta button[type="submit"]').textContent = 'Criar Conta';
+                
+                loadContas();
+            } catch (error) {
+                console.error('Erro ao salvar conta:', error);
+                alert('Erro ao salvar conta: ' + error.message);
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = textoOriginal;
+            }
+        });
+
+        // ===== FORM CATEGORIA =====
+        document.getElementById('form-categoria').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btnSubmit = e.target.querySelector('button[type="submit"]');
+            btnSubmit.disabled = true;
+            const textoOriginal = btnSubmit.textContent;
+            btnSubmit.textContent = categoriaEditandoId ? 'Salvando...' : 'Criando...';
+
+            try {
+                const dados = {
+                    nome: document.getElementById('categoria-nome').value,
+                    tipo: document.getElementById('categoria-tipo').value,
+                    icone: document.getElementById('categoria-icone').value,
+                    ativa: true
+                };
+                
+                if (categoriaEditandoId) {
+                    // EDITAR
+                    await updateDoc(doc(db, `users/${window.currentUser.uid}/categorias`, categoriaEditandoId), dados);
+                    alert('Categoria atualizada com sucesso!');
+                    categoriaEditandoId = null;
+                } else {
+                    // CRIAR
+                    dados.dataCriacao = new Date().toISOString();
+                    await addDoc(getUserCollection('categorias'), dados);
+                    alert('Categoria criada com sucesso!');
+                }
+
+                closeModal('modal-categoria');
+                e.target.reset();
+                
+                // Resetar modal
+                document.querySelector('#modal-categoria .modal-title').textContent = 'Nova Categoria';
+                document.querySelector('#form-categoria button[type="submit"]').textContent = 'Criar Categoria';
+                
+                loadCategorias();
+            } catch (error) {
+                console.error('Erro ao salvar categoria:', error);
+                alert('Erro ao salvar categoria: ' + error.message);
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = textoOriginal;
+            }
+        });
+
+        // ===== FORM RECORRENTE =====
+        async function openModalRecorrente() {
+            try {
+                const categoriasSnap = await getDocs(getUserCollection('categorias'));
+                const contasSnap = await getDocs(getUserCollection('contas'));
+                
+                const categoriaSelect = document.getElementById('recorrente-categoria');
+                const contaSelect = document.getElementById('recorrente-conta');
+                
+                categoriaSelect.innerHTML = '<option value="">Selecione uma categoria</option>';
+                contaSelect.innerHTML = '<option value="">Selecione uma conta</option>';
+                
+                categoriasSnap.forEach(doc => {
+                    const cat = doc.data();
+                    categoriaSelect.innerHTML += `<option value="${doc.id}">${cat.icone} ${cat.nome}</option>`;
+                });
+                
+                contasSnap.forEach(doc => {
+                    const conta = doc.data();
+                    contaSelect.innerHTML += `<option value="${doc.id}">${conta.nome}</option>`;
+                });
+                
+                openModal('modal-recorrente');
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                alert('Erro ao carregar dados: ' + error.message);
+            }
+        }
+        
+        window.openModalRecorrente = openModalRecorrente;
+        
+        function handleTipoRecorrenteChange() {
+            const tipo = document.getElementById('recorrente-tipo').value;
+            const valorInput = document.getElementById('recorrente-valor');
+            const valorHint = document.getElementById('recorrente-valor-hint');
+            
+            if (tipo === 'despesaFixa') {
+                valorInput.required = true;
+                valorInput.placeholder = 'Ex: 1200.00';
+                valorHint.textContent = 'Informe o valor fixo mensal';
+            } else {
+                valorInput.required = false;
+                valorInput.placeholder = 'Deixe em 0 (valor variável)';
+                if (tipo === 'faturaCartao') {
+                    valorHint.textContent = 'Fatura de cartão sempre tem valor variável';
+                } else {
+                    valorHint.textContent = 'Para receitas/despesas variáveis, deixe em 0';
+                }
+            }
+        }
+        
+        window.handleTipoRecorrenteChange = handleTipoRecorrenteChange;
+        
+        document.getElementById('form-recorrente').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btnSubmit = e.target.querySelector('button[type="submit"]');
+            btnSubmit.disabled = true;
+            const textoOriginal = btnSubmit.textContent;
+            btnSubmit.textContent = recorrenteEditandoId ? 'Salvando...' : 'Criando...';
+
+            try {
+                const tipo = document.getElementById('recorrente-tipo').value;
+                const valorFixo = parseFloat(document.getElementById('recorrente-valor').value) || 0;
+                
+                const dados = {
+                    tipo: tipo,
+                    descricao: document.getElementById('recorrente-descricao').value,
+                    valorFixo: valorFixo,
+                    categoriaId: document.getElementById('recorrente-categoria').value,
+                    contaId: document.getElementById('recorrente-conta').value,
+                    diaVencimento: parseInt(document.getElementById('recorrente-dia').value),
+                    ativa: true
+                };
+                
+                if (recorrenteEditandoId) {
+                    // EDITAR
+                    await updateDoc(doc(db, `users/${window.currentUser.uid}/recorrentes`, recorrenteEditandoId), dados);
+                    alert('Recorrente atualizada com sucesso!');
+                    recorrenteEditandoId = null;
+                } else {
+                    // CRIAR
+                    dados.dataCriacao = new Date().toISOString();
+                    await addDoc(getUserCollection('recorrentes'), dados);
+                    alert('Recorrente criada com sucesso!');
+                }
+
+                closeModal('modal-recorrente');
+                e.target.reset();
+                
+                // Resetar modal
+                document.querySelector('#modal-recorrente .modal-title').textContent = 'Nova Recorrente';
+                document.querySelector('#form-recorrente button[type="submit"]').textContent = 'Criar Recorrente';
+                
+                loadRecorrentes();
+            } catch (error) {
+                console.error('Erro ao salvar recorrente:', error);
+                alert('Erro ao salvar recorrente: ' + error.message);
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = textoOriginal;
+            }
+        });
+
+        // ===== FORM TRANSAÇÃO =====
+        async function openModalTransacao() {
+            // Carregar categorias e contas nos selects
+            try {
+                const categoriasSnap = await getDocs(getUserCollection('categorias'));
+                const contasSnap = await getDocs(getUserCollection('contas'));
+                
+                const categoriaSelect = document.getElementById('transacao-categoria');
+                const contaSelect = document.getElementById('transacao-conta');
+                
+                categoriaSelect.innerHTML = '<option value="">Selecione uma categoria</option>';
+                contaSelect.innerHTML = '<option value="">Selecione uma conta</option>';
+                
+                categoriasSnap.forEach(doc => {
+                    const cat = doc.data();
+                    categoriaSelect.innerHTML += `<option value="${doc.id}">${cat.icone} ${cat.nome} (${cat.tipo})</option>`;
+                });
+                
+                contasSnap.forEach(doc => {
+                    const conta = doc.data();
+                    contaSelect.innerHTML += `<option value="${doc.id}">${conta.nome}</option>`;
+                });
+                
+                // Setar data de hoje
+                document.getElementById('transacao-data').valueAsDate = new Date();
+                
+                openModal('modal-transacao');
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                alert('Erro ao carregar dados: ' + error.message);
+            }
+        }
+
+        window.openModalTransacao = openModalTransacao;
+
+        document.getElementById('form-transacao').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btnSubmit = e.target.querySelector('button[type="submit"]');
+            btnSubmit.disabled = true;
+            const textoOriginal = btnSubmit.textContent;
+            btnSubmit.textContent = transacaoEditandoId ? 'Salvando...' : 'Criando...';
+
+            try {
+                const dados = {
+                    tipo: document.getElementById('transacao-tipo').value,
+                    descricao: document.getElementById('transacao-descricao').value,
+                    valor: parseFloat(document.getElementById('transacao-valor').value),
+                    categoriaId: document.getElementById('transacao-categoria').value,
+                    contaId: document.getElementById('transacao-conta').value,
+                    data: document.getElementById('transacao-data').value,
+                    status: document.getElementById('transacao-status').value
+                };
+                
+                if (transacaoEditandoId) {
+                    // EDITAR
+                    await updateDoc(doc(db, `users/${window.currentUser.uid}/transacoes`, transacaoEditandoId), dados);
+                    alert('Transação atualizada com sucesso!');
+                    transacaoEditandoId = null;
+                } else {
+                    // CRIAR
+                    dados.dataCriacao = new Date().toISOString();
+                    await addDoc(getUserCollection('transacoes'), dados);
+                    alert('Transação criada com sucesso!');
+                }
+
+                closeModal('modal-transacao');
+                e.target.reset();
+                
+                // Resetar modal
+                document.querySelector('#modal-transacao .modal-title').textContent = 'Nova Transação';
+                document.querySelector('#form-transacao button[type="submit"]').textContent = 'Criar Transação';
+                
+                loadTransacoes();
+                loadDashboard();
+            } catch (error) {
+                console.error('Erro ao salvar transação:', error);
+                alert('Erro ao salvar transação: ' + error.message);
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = textoOriginal;
+            }
+        });
+
+        // ===== RECORRENTES =====
+        async function loadRecorrentes() {
+            const content = document.getElementById('page-content');
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Transações Recorrentes</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-success" onclick="gerarTransacoesDoMes()">🔄 Gerar Transações do Mês</button>
+                            <button class="btn btn-primary" onclick="openModalRecorrente()">+ Nova Recorrente</button>
+                        </div>
+                    </div>
+                    <div class="loading">Carregando recorrentes...</div>
+                </div>
+            `;
+
+            try {
+                const q = query(getUserCollection('recorrentes'), orderBy('descricao'));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    content.innerHTML = `
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Transações Recorrentes</h3>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="btn btn-success" onclick="gerarTransacoesDoMes()">🔄 Gerar Transações do Mês</button>
+                                    <button class="btn btn-primary" onclick="openModalRecorrente()">+ Nova Recorrente</button>
+                                </div>
+                            </div>
+                            <div class="empty-state">
+                                <div class="empty-state-icon">🔄</div>
+                                <div class="empty-state-text">Você ainda não tem transações recorrentes</div>
+                                <button class="btn btn-primary" onclick="openModalRecorrente()">Criar Primeira Recorrente</button>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Buscar categorias e contas
+                const categoriasSnap = await getDocs(getUserCollection('categorias'));
+                const contasSnap = await getDocs(getUserCollection('contas'));
+                
+                const categorias = {};
+                const contas = {};
+                
+                categoriasSnap.forEach(doc => {
+                    categorias[doc.id] = doc.data();
+                });
+                
+                contasSnap.forEach(doc => {
+                    contas[doc.id] = doc.data();
+                });
+
+                const hoje = new Date();
+                const mesAtual = hoje.getMonth();
+                const anoAtual = hoje.getFullYear();
+
+                let recorrentesHTML = '';
+                snapshot.forEach(doc => {
+                    const rec = doc.data();
+                    const categoria = categorias[rec.categoriaId] || { icone: '❓', nome: 'Sem categoria' };
+                    const conta = contas[rec.contaId] || { nome: 'Sem conta' };
+                    
+                    // Verificar se já foi gerada este mês
+                    let ultimaGeracao = 'Nunca gerada';
+                    let jaGeradaEsteMes = false;
+                    if (rec.ultimaGeracao) {
+                        const dataGeracao = new Date(rec.ultimaGeracao);
+                        ultimaGeracao = dataGeracao.toLocaleDateString('pt-BR');
+                        jaGeradaEsteMes = dataGeracao.getMonth() === mesAtual && dataGeracao.getFullYear() === anoAtual;
+                    }
+                    
+                    let tipoTexto = '';
+                    let tipoIcon = '';
+                    let tipoCor = '';
+                    
+                    if (rec.tipo === 'receitaVariavel') {
+                        tipoTexto = 'Receita Variável';
+                        tipoIcon = '💰';
+                        tipoCor = 'var(--success)';
+                    } else if (rec.tipo === 'despesaFixa') {
+                        tipoTexto = 'Despesa Fixa';
+                        tipoIcon = '💵';
+                        tipoCor = 'var(--danger)';
+                    } else if (rec.tipo === 'faturaCartao') {
+                        tipoTexto = 'Fatura de Cartão';
+                        tipoIcon = '💳';
+                        tipoCor = 'var(--info)';
+                    } else {
+                        tipoTexto = 'Despesa Variável';
+                        tipoIcon = '💡';
+                        tipoCor = 'var(--warning)';
+                    }
+                    
+                    const valorTexto = rec.valorFixo && parseFloat(rec.valorFixo) > 0 
+                        ? `R$ ${parseFloat(rec.valorFixo).toFixed(2)}` 
+                        : 'Valor variável';
+                    
+                    recorrentesHTML += `
+                        <div class="categoria-item" style="border-left: 4px solid ${tipoCor};">
+                            <div class="categoria-info">
+                                <div class="categoria-icon" style="font-size: 2rem;">${tipoIcon}</div>
+                                <div style="flex: 1;">
+                                    <div class="categoria-nome">${rec.descricao}</div>
+                                    <div style="font-size: 0.85rem; color: var(--text-light); margin-top: 5px;">
+                                        <span class="badge" style="background: ${tipoCor}20; color: ${tipoCor};">${tipoTexto}</span>
+                                        <span style="margin: 0 8px;">•</span>
+                                        ${categoria.icone} ${categoria.nome}
+                                        <span style="margin: 0 8px;">•</span>
+                                        🏦 ${conta.nome}
+                                        <span style="margin: 0 8px;">•</span>
+                                        📅 Dia ${rec.diaVencimento}
+                                    </div>
+                                    <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 5px;">
+                                        ${jaGeradaEsteMes 
+                                            ? `✅ <strong style="color: var(--success);">Gerada este mês</strong> (${ultimaGeracao})` 
+                                            : `⏰ Última geração: ${ultimaGeracao}`
+                                        }
+                                    </div>
+                                </div>
+                                <div style="text-align: right; margin-right: 20px;">
+                                    <div style="font-size: 1.3rem; font-weight: 700; color: ${tipoCor};">${valorTexto}</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="editarRecorrente('${doc.id}')" class="btn btn-sm" style="background: var(--info); color: white;">✏️ Editar</button>
+                                <button onclick="deletarRecorrente('${doc.id}', '${rec.descricao}')" class="btn btn-sm btn-danger">🗑️ Deletar</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                content.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Transações Recorrentes</h3>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-success" onclick="gerarTransacoesDoMes()">🔄 Gerar Transações do Mês</button>
+                                <button class="btn btn-primary" onclick="openModalRecorrente()">+ Nova Recorrente</button>
+                            </div>
+                        </div>
+                        ${recorrentesHTML}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Erro ao carregar recorrentes:', error);
+                content.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Transações Recorrentes</h3>
+                            <button class="btn btn-primary" onclick="openModalRecorrente()">+ Nova Recorrente</button>
+                        </div>
+                        <div style="padding: 20px; color: var(--danger);">Erro ao carregar recorrentes: ${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // ===== DELETAR =====
+        
+        async function deletarConta(id, nome) {
+            if (!confirm(`Tem certeza que deseja deletar a conta "${nome}"?\n\nEsta ação não pode ser desfeita!`)) {
+                return;
+            }
+            
+            try {
+                await deleteDoc(doc(db, `users/${window.currentUser.uid}/contas`, id));
+                alert('Conta deletada com sucesso!');
+                loadContas();
+            } catch (error) {
+                console.error('Erro ao deletar conta:', error);
+                alert('Erro ao deletar conta: ' + error.message);
+            }
+        }
+        
+        window.deletarConta = deletarConta;
+        
+        async function deletarCategoria(id, nome) {
+            if (!confirm(`Tem certeza que deseja deletar a categoria "${nome}"?\n\nEsta ação não pode ser desfeita!`)) {
+                return;
+            }
+            
+            try {
+                await deleteDoc(doc(db, `users/${window.currentUser.uid}/categorias`, id));
+                alert('Categoria deletada com sucesso!');
+                loadCategorias();
+            } catch (error) {
+                console.error('Erro ao deletar categoria:', error);
+                alert('Erro ao deletar categoria: ' + error.message);
+            }
+        }
+        
+        window.deletarCategoria = deletarCategoria;
+        
+        async function deletarTransacao(id, descricao) {
+            if (!confirm(`Tem certeza que deseja deletar a transação "${descricao}"?\n\nEsta ação não pode ser desfeita!`)) {
+                return;
+            }
+            
+            try {
+                await deleteDoc(doc(db, `users/${window.currentUser.uid}/transacoes`, id));
+                alert('Transação deletada com sucesso!');
+                loadTransacoes();
+            } catch (error) {
+                console.error('Erro ao deletar transação:', error);
+                alert('Erro ao deletar transação: ' + error.message);
+            }
+        }
+        
+        window.deletarTransacao = deletarTransacao;
+        
+        async function pagarTransacao(id, descricao) {
+            if (!confirm(`Confirma o pagamento de "${descricao}"?\n\nO saldo será atualizado automaticamente.`)) {
+                return;
+            }
+            
+            try {
+                // Atualizar status para pago
+                await updateDoc(doc(db, `users/${window.currentUser.uid}/transacoes`, id), {
+                    status: 'pago'
+                });
+                
+                alert(`✅ Pagamento de "${descricao}" registrado com sucesso!\n\nSeu saldo foi atualizado.`);
+                
+                // Recarregar página para atualizar tudo
+                loadTransacoes();
+                
+                // Atualizar notificações
+                setTimeout(() => {
+                    verificarVencimentos();
+                }, 500);
+                
+            } catch (error) {
+                console.error('Erro ao pagar transação:', error);
+                alert('Erro ao registrar pagamento: ' + error.message);
+            }
+        }
+        
+        window.pagarTransacao = pagarTransacao;
+        
+        async function deletarRecorrente(id, descricao) {
+            if (!confirm(`Tem certeza que deseja deletar a recorrente "${descricao}"?\n\nEsta ação não pode ser desfeita!`)) {
+                return;
+            }
+            
+            try {
+                await deleteDoc(doc(db, `users/${window.currentUser.uid}/recorrentes`, id));
+                alert('Recorrente deletada com sucesso!');
+                loadRecorrentes();
+            } catch (error) {
+                console.error('Erro ao deletar recorrente:', error);
+                alert('Erro ao deletar recorrente: ' + error.message);
+            }
+        }
+        
+        window.deletarRecorrente = deletarRecorrente;
+
+        // ===== EDITAR =====
+        
+        let contaEditandoId = null;
+        
+        async function editarConta(id) {
+            try {
+                const docRef = doc(db, `users/${window.currentUser.uid}/contas`, id);
+                const docSnap = await getDocs(query(getUserCollection('contas')));
+                
+                let contaData = null;
+                docSnap.forEach(d => {
+                    if (d.id === id) {
+                        contaData = d.data();
+                    }
+                });
+                
+                if (!contaData) {
+                    alert('Conta não encontrada!');
+                    return;
+                }
+                
+                // Preencher formulário
+                document.getElementById('conta-nome').value = contaData.nome;
+                document.getElementById('conta-tipo').value = contaData.tipo;
+                document.getElementById('conta-saldo').value = contaData.saldoInicial;
+                corSelecionada = contaData.cor;
+                
+                // Marcar cor selecionada
+                document.querySelectorAll('.color-option').forEach(opt => {
+                    if (opt.dataset.cor === contaData.cor) {
+                        opt.classList.add('selected');
+                    } else {
+                        opt.classList.remove('selected');
+                    }
+                });
+                
+                // Mudar título e botão do modal
+                document.querySelector('#modal-conta .modal-title').textContent = 'Editar Conta';
+                document.querySelector('#form-conta button[type="submit"]').textContent = 'Salvar Alterações';
+                
+                contaEditandoId = id;
+                openModal('modal-conta');
+            } catch (error) {
+                console.error('Erro ao carregar conta:', error);
+                alert('Erro ao carregar conta: ' + error.message);
+            }
+        }
+        
+        window.editarConta = editarConta;
+        
+        let categoriaEditandoId = null;
+        
+        async function editarCategoria(id) {
+            try {
+                const docSnap = await getDocs(query(getUserCollection('categorias')));
+                
+                let categoriaData = null;
+                docSnap.forEach(d => {
+                    if (d.id === id) {
+                        categoriaData = d.data();
+                    }
+                });
+                
+                if (!categoriaData) {
+                    alert('Categoria não encontrada!');
+                    return;
+                }
+                
+                // Preencher formulário
+                document.getElementById('categoria-nome').value = categoriaData.nome;
+                document.getElementById('categoria-tipo').value = categoriaData.tipo;
+                document.getElementById('categoria-icone').value = categoriaData.icone;
+                
+                // Mudar título e botão do modal
+                document.querySelector('#modal-categoria .modal-title').textContent = 'Editar Categoria';
+                document.querySelector('#form-categoria button[type="submit"]').textContent = 'Salvar Alterações';
+                
+                categoriaEditandoId = id;
+                openModal('modal-categoria');
+            } catch (error) {
+                console.error('Erro ao carregar categoria:', error);
+                alert('Erro ao carregar categoria: ' + error.message);
+            }
+        }
+        
+        window.editarCategoria = editarCategoria;
+        
+        let transacaoEditandoId = null;
+        
+        async function editarTransacao(id) {
+            try {
+                // Carregar categorias e contas primeiro
+                const categoriasSnap = await getDocs(getUserCollection('categorias'));
+                const contasSnap = await getDocs(getUserCollection('contas'));
+                
+                const categoriaSelect = document.getElementById('transacao-categoria');
+                const contaSelect = document.getElementById('transacao-conta');
+                
+                categoriaSelect.innerHTML = '<option value="">Selecione uma categoria</option>';
+                contaSelect.innerHTML = '<option value="">Selecione uma conta</option>';
+                
+                categoriasSnap.forEach(doc => {
+                    const cat = doc.data();
+                    categoriaSelect.innerHTML += `<option value="${doc.id}">${cat.icone} ${cat.nome} (${cat.tipo})</option>`;
+                });
+                
+                contasSnap.forEach(doc => {
+                    const conta = doc.data();
+                    contaSelect.innerHTML += `<option value="${doc.id}">${conta.nome}</option>`;
+                });
+                
+                // Buscar transação
+                const docSnap = await getDocs(query(getUserCollection('transacoes')));
+                
+                let transacaoData = null;
+                docSnap.forEach(d => {
+                    if (d.id === id) {
+                        transacaoData = d.data();
+                    }
+                });
+                
+                if (!transacaoData) {
+                    alert('Transação não encontrada!');
+                    return;
+                }
+                
+                // Preencher formulário
+                document.getElementById('transacao-tipo').value = transacaoData.tipo;
+                document.getElementById('transacao-descricao').value = transacaoData.descricao;
+                document.getElementById('transacao-valor').value = transacaoData.valor;
+                document.getElementById('transacao-categoria').value = transacaoData.categoriaId;
+                document.getElementById('transacao-conta').value = transacaoData.contaId;
+                document.getElementById('transacao-data').value = transacaoData.data;
+                document.getElementById('transacao-status').value = transacaoData.status;
+                
+                // Mudar título e botão do modal
+                document.querySelector('#modal-transacao .modal-title').textContent = 'Editar Transação';
+                document.querySelector('#form-transacao button[type="submit"]').textContent = 'Salvar Alterações';
+                
+                transacaoEditandoId = id;
+                openModal('modal-transacao');
+            } catch (error) {
+                console.error('Erro ao carregar transação:', error);
+                alert('Erro ao carregar transação: ' + error.message);
+            }
+        }
+        
+        window.editarTransacao = editarTransacao;
+        
+        let recorrenteEditandoId = null;
+        
+        async function editarRecorrente(id) {
+            try {
+                const docSnap = await getDocs(query(getUserCollection('recorrentes')));
+                
+                let recorrenteData = null;
+                docSnap.forEach(d => {
+                    if (d.id === id) {
+                        recorrenteData = d.data();
+                    }
+                });
+                
+                if (!recorrenteData) {
+                    alert('Recorrente não encontrada!');
+                    return;
+                }
+                
+                // Carregar categorias e contas
+                const categoriasSnap = await getDocs(getUserCollection('categorias'));
+                const contasSnap = await getDocs(getUserCollection('contas'));
+                
+                const categoriaSelect = document.getElementById('recorrente-categoria');
+                const contaSelect = document.getElementById('recorrente-conta');
+                
+                categoriaSelect.innerHTML = '<option value="">Selecione uma categoria</option>';
+                contaSelect.innerHTML = '<option value="">Selecione uma conta</option>';
+                
+                categoriasSnap.forEach(doc => {
+                    const cat = doc.data();
+                    categoriaSelect.innerHTML += `<option value="${doc.id}">${cat.icone} ${cat.nome}</option>`;
+                });
+                
+                contasSnap.forEach(doc => {
+                    const conta = doc.data();
+                    contaSelect.innerHTML += `<option value="${doc.id}">${conta.nome}</option>`;
+                });
+                
+                // Preencher formulário
+                document.getElementById('recorrente-tipo').value = recorrenteData.tipo;
+                document.getElementById('recorrente-descricao').value = recorrenteData.descricao;
+                document.getElementById('recorrente-valor').value = recorrenteData.valorFixo || 0;
+                document.getElementById('recorrente-categoria').value = recorrenteData.categoriaId;
+                document.getElementById('recorrente-conta').value = recorrenteData.contaId;
+                document.getElementById('recorrente-dia').value = recorrenteData.diaVencimento;
+                
+                handleTipoRecorrenteChange();
+                
+                // Mudar título e botão do modal
+                document.querySelector('#modal-recorrente .modal-title').textContent = 'Editar Recorrente';
+                document.querySelector('#form-recorrente button[type="submit"]').textContent = 'Salvar Alterações';
+                
+                recorrenteEditandoId = id;
+                openModal('modal-recorrente');
+            } catch (error) {
+                console.error('Erro ao carregar recorrente:', error);
+                alert('Erro ao carregar recorrente: ' + error.message);
+            }
+        }
+        
+        window.editarRecorrente = editarRecorrente;
+        
+        // Gerar transações do mês atual
+        async function gerarTransacoesDoMes() {
+            if (!confirm('Deseja gerar as transações recorrentes do mês atual?\n\nApenas as recorrentes que ainda não foram geradas este mês serão criadas.')) {
+                return;
+            }
+            
+            try {
+                const hoje = new Date();
+                const mesAtual = hoje.getMonth();
+                const anoAtual = hoje.getFullYear();
+                
+                const recorrentesSnap = await getDocs(getUserCollection('recorrentes'));
+                
+                if (recorrentesSnap.empty) {
+                    alert('Você não tem recorrentes cadastradas!');
+                    return;
+                }
+                
+                let totalGeradas = 0;
+                let totalJaGeradas = 0;
+                
+                for (const docSnap of recorrentesSnap.docs) {
+                    const rec = docSnap.data();
+                    const recId = docSnap.id;
+                    
+                    // Verificar se já foi gerada este mês
+                    let jaGerada = false;
+                    if (rec.ultimaGeracao) {
+                        const dataGeracao = new Date(rec.ultimaGeracao);
+                        jaGerada = dataGeracao.getMonth() === mesAtual && dataGeracao.getFullYear() === anoAtual;
+                    }
+                    
+                    if (jaGerada) {
+                        totalJaGeradas++;
+                        continue;
+                    }
+                    
+                    // Calcular data da transação (dia escolhido do mês atual)
+                    let diaVencimento = parseInt(rec.diaVencimento);
+                    const ultimoDiaMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
+                    
+                    if (diaVencimento > ultimoDiaMes) {
+                        diaVencimento = ultimoDiaMes;
+                    }
+                    
+                    const dataTransacao = new Date(anoAtual, mesAtual, diaVencimento);
+                    const dataFormatada = dataTransacao.toISOString().split('T')[0];
+                    
+                    // Determinar tipo de transação e valor
+                    let tipoTransacao = '';
+                    let valorTransacao = 0;
+                    
+                    if (rec.tipo === 'receitaVariavel') {
+                        tipoTransacao = 'receita';
+                        valorTransacao = 0; // Usuário preenche depois
+                    } else if (rec.tipo === 'despesaFixa') {
+                        tipoTransacao = 'despesa';
+                        valorTransacao = parseFloat(rec.valorFixo || 0);
+                    } else if (rec.tipo === 'faturaCartao') {
+                        tipoTransacao = 'despesa';
+                        valorTransacao = 0; // Usuário preenche depois
+                    } else { // despesaVariavel
+                        tipoTransacao = 'despesa';
+                        valorTransacao = 0; // Usuário preenche depois
+                    }
+                    
+                    // Criar transação
+                    await addDoc(getUserCollection('transacoes'), {
+                        tipo: tipoTransacao,
+                        descricao: rec.descricao,
+                        valor: valorTransacao,
+                        categoriaId: rec.categoriaId,
+                        contaId: rec.contaId,
+                        data: dataFormatada,
+                        status: 'pendente',
+                        recorrenteId: recId,
+                        dataCriacao: new Date().toISOString()
+                    });
+                    
+                    // Atualizar data da última geração
+                    await updateDoc(doc(db, `users/${window.currentUser.uid}/recorrentes`, recId), {
+                        ultimaGeracao: new Date().toISOString()
+                    });
+                    
+                    totalGeradas++;
+                }
+                
+                if (totalGeradas === 0 && totalJaGeradas > 0) {
+                    alert(`Todas as ${totalJaGeradas} recorrentes já foram geradas este mês! ✅`);
+                } else if (totalGeradas > 0) {
+                    alert(`✅ ${totalGeradas} transação(ões) gerada(s) com sucesso!\n${totalJaGeradas > 0 ? `\n${totalJaGeradas} já havia(m) sido gerada(s) anteriormente.` : ''}`);
+                    loadRecorrentes();
+                    loadDashboard();
+                } else {
+                    alert('Nenhuma transação foi gerada.');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao gerar transações:', error);
+                alert('Erro ao gerar transações: ' + error.message);
+            }
+        }
+        
+        window.gerarTransacoesDoMes = gerarTransacoesDoMes;
+        
+        // ===== PARCELADOS =====
+        async function loadParcelados() {
+            const content = document.getElementById('page-content');
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Compras Parceladas</h3>
+                        <button class="btn btn-primary" onclick="openModalParcelado()">+ Nova Compra Parcelada</button>
+                    </div>
+                    <div class="loading">Carregando parcelados...</div>
+                </div>
+            `;
+
+            try {
+                const q = query(getUserCollection('parcelados'), orderBy('dataInicio', 'desc'));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    content.innerHTML = `
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Compras Parceladas</h3>
+                                <button class="btn btn-primary" onclick="openModalParcelado()">+ Nova Compra Parcelada</button>
+                            </div>
+                            <div class="empty-state">
+                                <div class="empty-state-icon">💰</div>
+                                <div class="empty-state-text">Você ainda não tem compras parceladas</div>
+                                <button class="btn btn-primary" onclick="openModalParcelado()">Criar Primeira Compra Parcelada</button>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const categoriasSnap = await getDocs(getUserCollection('categorias'));
+                const contasSnap = await getDocs(getUserCollection('contas'));
+                const transacoesSnap = await getDocs(getUserCollection('transacoes'));
+                
+                const categorias = {};
+                const contas = {};
+                
+                categoriasSnap.forEach(doc => {
+                    categorias[doc.id] = doc.data();
+                });
+                
+                contasSnap.forEach(doc => {
+                    contas[doc.id] = doc.data();
+                });
+                
+                // Contar parcelas pagas por parcelado
+                const parcelasPagas = {};
+                transacoesSnap.forEach(doc => {
+                    const trans = doc.data();
+                    if (trans.parceladoId && trans.status === 'pago') {
+                        parcelasPagas[trans.parceladoId] = (parcelasPagas[trans.parceladoId] || 0) + 1;
+                    }
+                });
+
+                let parceladosHTML = '';
+                snapshot.forEach(doc => {
+                    const parc = doc.data();
+                    const categoria = categorias[parc.categoriaId] || { icone: '❓', nome: 'Sem categoria' };
+                    const conta = contas[parc.contaId] || { nome: 'Sem conta' };
+                    const valorParcela = parseFloat(parc.valorTotal) / parseInt(parc.numeroParcelas);
+                    const pagas = parcelasPagas[doc.id] || 0;
+                    const progresso = (pagas / parc.numeroParcelas) * 100;
+                    
+                    const statusCor = pagas === parc.numeroParcelas ? 'var(--success)' : 'var(--primary)';
+                    const statusTexto = pagas === parc.numeroParcelas ? '✅ Finalizado' : `${pagas}/${parc.numeroParcelas} pagas`;
+                    
+                    parceladosHTML += `
+                        <div class="card" style="border-left: 4px solid ${statusCor}; margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                                <div style="flex: 1;">
+                                    <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 8px;">${parc.descricao}</h3>
+                                    <div style="font-size: 0.9rem; color: var(--text-light);">
+                                        ${categoria.icone} ${categoria.nome} • 💳 ${conta.nome}
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger); margin-bottom: 5px;">
+                                        R$ ${parseFloat(parc.valorTotal).toFixed(2)}
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: var(--text-light);">
+                                        ${parc.numeroParcelas}x de R$ ${valorParcela.toFixed(2)}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-weight: 600; color: ${statusCor};">${statusTexto}</span>
+                                    <span style="font-weight: 600;">${progresso.toFixed(0)}%</span>
+                                </div>
+                                <div style="background: var(--bg); height: 10px; border-radius: 10px; overflow: hidden;">
+                                    <div style="background: ${statusCor}; height: 100%; width: ${progresso}%; transition: width 0.3s; border-radius: 10px;"></div>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                                <button onclick="verDetalhesParcelado('${doc.id}')" class="btn btn-sm" style="background: var(--info); color: white;">👁️ Ver Parcelas</button>
+                                <button onclick="deletarParcelado('${doc.id}', '${parc.descricao}')" class="btn btn-sm btn-danger">🗑️ Deletar</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                content.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Compras Parceladas</h3>
+                            <button class="btn btn-primary" onclick="openModalParcelado()">+ Nova Compra Parcelada</button>
+                        </div>
+                    </div>
+                    ${parceladosHTML}
+                `;
+            } catch (error) {
+                console.error('Erro ao carregar parcelados:', error);
+                alert('Erro ao carregar parcelados: ' + error.message);
+            }
+        }
+        
+        async function openModalParcelado() {
+            try {
+                const categoriasSnap = await getDocs(query(getUserCollection('categorias'), orderBy('nome')));
+                const contasSnap = await getDocs(query(getUserCollection('contas'), orderBy('nome')));
+                
+                const categoriaSelect = document.getElementById('parcelado-categoria');
+                const contaSelect = document.getElementById('parcelado-conta');
+                
+                categoriaSelect.innerHTML = '<option value="">Selecione uma categoria</option>';
+                contaSelect.innerHTML = '<option value="">Selecione um cartão</option>';
+                
+                categoriasSnap.forEach(doc => {
+                    const cat = doc.data();
+                    if (cat.tipo === 'despesa') {
+                        categoriaSelect.innerHTML += `<option value="${doc.id}">${cat.icone} ${cat.nome}</option>`;
+                    }
+                });
+                
+                contasSnap.forEach(doc => {
+                    const conta = doc.data();
+                    contaSelect.innerHTML += `<option value="${doc.id}">${conta.nome}</option>`;
+                });
+                
+                document.getElementById('parcelado-data-inicio').valueAsDate = new Date();
+                
+                openModal('modal-parcelado');
+            } catch (error) {
+                console.error('Erro ao abrir modal:', error);
+                alert('Erro ao abrir modal: ' + error.message);
+            }
+        }
+        
+        window.openModalParcelado = openModalParcelado;
+        
+        // Calcular valor da parcela em tempo real
+        document.getElementById('parcelado-valor-total').addEventListener('input', calcularValorParcela);
+        document.getElementById('parcelado-parcelas').addEventListener('input', calcularValorParcela);
+        
+        function calcularValorParcela() {
+            const valorTotal = parseFloat(document.getElementById('parcelado-valor-total').value) || 0;
+            const parcelas = parseInt(document.getElementById('parcelado-parcelas').value) || 1;
+            const valorParcela = valorTotal / parcelas;
+            document.getElementById('parcelado-valor-parcela').textContent = `R$ ${valorParcela.toFixed(2)}`;
+        }
+        
+        document.getElementById('form-parcelado').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btnSubmit = e.target.querySelector('button[type="submit"]');
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = 'Criando parcelas...';
+
+            try {
+                const valorTotal = parseFloat(document.getElementById('parcelado-valor-total').value);
+                const numeroParcelas = parseInt(document.getElementById('parcelado-parcelas').value);
+                const valorParcela = valorTotal / numeroParcelas;
+                const dataInicio = document.getElementById('parcelado-data-inicio').value;
+                
+                // Criar registro do parcelado
+                const parceladoRef = await addDoc(getUserCollection('parcelados'), {
+                    descricao: document.getElementById('parcelado-descricao').value,
+                    valorTotal: valorTotal,
+                    numeroParcelas: numeroParcelas,
+                    categoriaId: document.getElementById('parcelado-categoria').value,
+                    contaId: document.getElementById('parcelado-conta').value,
+                    dataInicio: dataInicio,
+                    ativa: true,
+                    dataCriacao: new Date().toISOString()
+                });
+                
+                // Criar todas as parcelas como transações
+                const dataInicioObj = new Date(dataInicio + 'T00:00:00');
+                
+                for (let i = 0; i < numeroParcelas; i++) {
+                    const dataParcela = new Date(dataInicioObj);
+                    dataParcela.setMonth(dataParcela.getMonth() + i);
+                    const dataFormatada = dataParcela.toISOString().split('T')[0];
+                    
+                    await addDoc(getUserCollection('transacoes'), {
+                        tipo: 'despesa',
+                        descricao: `${document.getElementById('parcelado-descricao').value} (${i + 1}/${numeroParcelas})`,
+                        valor: valorParcela,
+                        categoriaId: document.getElementById('parcelado-categoria').value,
+                        contaId: document.getElementById('parcelado-conta').value,
+                        data: dataFormatada,
+                        status: 'pendente',
+                        parceladoId: parceladoRef.id,
+                        numeroParcela: i + 1,
+                        dataCriacao: new Date().toISOString()
+                    });
+                }
+
+                alert(`✅ Parcelamento criado com sucesso!\n\n${numeroParcelas} parcelas de R$ ${valorParcela.toFixed(2)} foram geradas.`);
+                
+                closeModal('modal-parcelado');
+                e.target.reset();
+                document.getElementById('parcelado-valor-parcela').textContent = 'R$ 0,00';
+                
+                loadParcelados();
+                loadDashboard();
+            } catch (error) {
+                console.error('Erro ao criar parcelado:', error);
+                alert('Erro ao criar parcelado: ' + error.message);
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = 'Criar Parcelamento';
+            }
+        });
+        
+        async function deletarParcelado(id, descricao) {
+            if (!confirm(`Tem certeza que deseja deletar o parcelamento "${descricao}"?\n\nTodas as parcelas (transações) também serão deletadas!\n\nEsta ação não pode ser desfeita!`)) {
+                return;
+            }
+            
+            try {
+                // Deletar todas as transações deste parcelado
+                const transacoesSnap = await getDocs(getUserCollection('transacoes'));
+                const deletarPromises = [];
+                
+                transacoesSnap.forEach(doc => {
+                    if (doc.data().parceladoId === id) {
+                        deletarPromises.push(deleteDoc(doc.ref));
+                    }
+                });
+                
+                await Promise.all(deletarPromises);
+                
+                // Deletar o parcelado
+                await deleteDoc(doc(db, `users/${window.currentUser.uid}/parcelados`, id));
+                
+                alert('Parcelamento e todas as parcelas deletadas com sucesso!');
+                loadParcelados();
+                loadDashboard();
+            } catch (error) {
+                console.error('Erro ao deletar parcelado:', error);
+                alert('Erro ao deletar parcelado: ' + error.message);
+            }
+        }
+        
+        window.deletarParcelado = deletarParcelado;
+        
+        async function verDetalhesParcelado(id) {
+            try {
+                const transacoesSnap = await getDocs(query(getUserCollection('transacoes'), orderBy('data')));
+                
+                let parcelas = [];
+                transacoesSnap.forEach(doc => {
+                    if (doc.data().parceladoId === id) {
+                        parcelas.push({ id: doc.id, ...doc.data() });
+                    }
+                });
+                
+                if (parcelas.length === 0) {
+                    alert('Nenhuma parcela encontrada!');
+                    return;
+                }
+                
+                let detalhesHTML = 'PARCELAS:\n\n';
+                parcelas.forEach(p => {
+                    const statusEmoji = p.status === 'pago' ? '✅' : '⏳';
+                    detalhesHTML += `${statusEmoji} Parcela ${p.numeroParcela} - ${formatDate(p.data)} - R$ ${parseFloat(p.valor).toFixed(2)} - ${p.status}\n`;
+                });
+                
+                alert(detalhesHTML);
+            } catch (error) {
+                console.error('Erro ao ver detalhes:', error);
+                alert('Erro ao ver detalhes: ' + error.message);
+            }
+        }
+        
+        window.verDetalhesParcelado = verDetalhesParcelado;
+        
+        // ===== ORÇAMENTOS =====
+        async function loadOrcamentos() {
+            const content = document.getElementById('page-content');
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Orçamentos Mensais</h3>
+                        <button class="btn btn-primary" onclick="openModalOrcamento()">+ Novo Orçamento</button>
+                    </div>
+                    <div class="loading">Carregando orçamentos...</div>
+                </div>
+            `;
+
+            try {
+                // Pegar mês atual
+                const hoje = new Date();
+                const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+                
+                // Buscar orçamentos do mês
+                const orcamentosSnap = await getDocs(getUserCollection('orcamentos'));
+                const categoriasSnap = await getDocs(getUserCollection('categorias'));
+                const transacoesSnap = await getDocs(getUserCollection('transacoes'));
+                
+                // Mapear categorias
+                const categorias = {};
+                categoriasSnap.forEach(doc => {
+                    categorias[doc.id] = doc.data();
+                });
+                
+                // Filtrar orçamentos do mês atual
+                const orcamentosMes = [];
+                orcamentosSnap.forEach(doc => {
+                    const orc = { id: doc.id, ...doc.data() };
+                    if (orc.mes === mesAtual) {
+                        orcamentosMes.push(orc);
+                    }
+                });
+                
+                if (orcamentosMes.length === 0) {
+                    content.innerHTML = `
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Orçamentos Mensais</h3>
+                                <button class="btn btn-primary" onclick="openModalOrcamento()">+ Novo Orçamento</button>
+                            </div>
+                            <div class="empty-state">
+                                <div class="empty-state-icon">🎯</div>
+                                <div class="empty-state-text">Você ainda não tem orçamentos para este mês</div>
+                                <button class="btn btn-primary" onclick="openModalOrcamento()">Criar Primeiro Orçamento</button>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Calcular gastos por categoria no mês
+                const gastosPorCategoria = {};
+                const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+                const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+                
+                transacoesSnap.forEach(doc => {
+                    const trans = doc.data();
+                    const dataTrans = new Date(trans.data + 'T00:00:00');
+                    
+                    if (trans.tipo === 'despesa' && trans.status === 'pago' && 
+                        dataTrans >= primeiroDiaMes && dataTrans <= ultimoDiaMes) {
+                        const catId = trans.categoriaId;
+                        if (!gastosPorCategoria[catId]) {
+                            gastosPorCategoria[catId] = 0;
+                        }
+                        gastosPorCategoria[catId] += parseFloat(trans.valor);
+                    }
+                });
+                
+                // Gerar HTML dos orçamentos
+                let orcamentosHTML = '';
+                orcamentosMes.forEach(orc => {
+                    const categoria = categorias[orc.categoriaId] || { icone: '❓', nome: 'Sem categoria' };
+                    const gasto = gastosPorCategoria[orc.categoriaId] || 0;
+                    const limite = parseFloat(orc.valorLimite);
+                    const percentual = (gasto / limite) * 100;
+                    const restante = limite - gasto;
+                    
+                    let corBarra = 'var(--success)';
+                    let statusTexto = '🟢 Dentro do orçamento';
+                    let corStatus = 'var(--success)';
+                    
+                    if (percentual >= 100) {
+                        corBarra = 'var(--danger)';
+                        statusTexto = '🔴 Orçamento estourado!';
+                        corStatus = 'var(--danger)';
+                    } else if (percentual >= 90) {
+                        corBarra = '#ff6b6b';
+                        statusTexto = '🟠 Atenção! Quase no limite';
+                        corStatus = 'var(--warning)';
+                    } else if (percentual >= 70) {
+                        corBarra = 'var(--warning)';
+                        statusTexto = '🟡 Atenção aos gastos';
+                        corStatus = 'var(--warning)';
+                    }
+                    
+                    orcamentosHTML += `
+                        <div class="card" style="border-left: 4px solid ${corBarra}; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                                        <span style="font-size: 2.5rem;">${categoria.icone}</span>
+                                        <div>
+                                            <h3 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 5px;">${categoria.nome}</h3>
+                                            <div style="font-size: 0.9rem; color: ${corStatus}; font-weight: 600;">
+                                                ${statusTexto}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 5px;">Limite</div>
+                                    <div style="font-size: 1.8rem; font-weight: 800; color: var(--text);">R$ ${limite.toFixed(2)}</div>
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; padding: 15px; background: var(--bg); border-radius: 10px;">
+                                <div>
+                                    <div style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 5px;">💸 Gasto</div>
+                                    <div style="font-size: 1.3rem; font-weight: 700; color: var(--danger);">R$ ${gasto.toFixed(2)}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 5px;">💰 Restante</div>
+                                    <div style="font-size: 1.3rem; font-weight: 700; color: ${restante >= 0 ? 'var(--success)' : 'var(--danger)'};">
+                                        R$ ${Math.abs(restante).toFixed(2)}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 5px;">📊 Progresso</div>
+                                    <div style="font-size: 1.3rem; font-weight: 700; color: ${corBarra};">${percentual.toFixed(1)}%</div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <div style="background: var(--bg); height: 14px; border-radius: 10px; overflow: hidden;">
+                                    <div style="background: ${corBarra}; height: 100%; width: ${Math.min(percentual, 100)}%; transition: width 0.3s, background 0.3s; border-radius: 10px;"></div>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                                <button onclick="editarOrcamento('${orc.id}')" class="btn btn-sm" style="background: var(--info); color: white;">✏️ Editar</button>
+                                <button onclick="deletarOrcamento('${orc.id}', '${categoria.nome}')" class="btn btn-sm btn-danger">🗑️ Deletar</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                content.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Orçamentos de ${hoje.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</h3>
+                            <button class="btn btn-primary" onclick="openModalOrcamento()">+ Novo Orçamento</button>
+                        </div>
+                    </div>
+                    ${orcamentosHTML}
+                `;
+            } catch (error) {
+                console.error('Erro ao carregar orçamentos:', error);
+                alert('Erro ao carregar orçamentos: ' + error.message);
+            }
+        }
+        
+        async function openModalOrcamento() {
+            try {
+                // Carregar apenas categorias de DESPESA
+                const categoriasSnap = await getDocs(query(getUserCollection('categorias'), orderBy('nome')));
+                const categoriaSelect = document.getElementById('orcamento-categoria');
+                
+                categoriaSelect.innerHTML = '<option value="">Selecione uma categoria</option>';
+                
+                categoriasSnap.forEach(doc => {
+                    const cat = doc.data();
+                    if (cat.tipo === 'despesa') {
+                        categoriaSelect.innerHTML += `<option value="${doc.id}">${cat.icone} ${cat.nome}</option>`;
+                    }
+                });
+                
+                // Setar mês atual como padrão
+                const hoje = new Date();
+                const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+                document.getElementById('orcamento-mes').value = mesAtual;
+                
+                openModal('modal-orcamento');
+            } catch (error) {
+                console.error('Erro ao abrir modal:', error);
+                alert('Erro ao abrir modal: ' + error.message);
+            }
+        }
+        
+        window.openModalOrcamento = openModalOrcamento;
+        
+        let orcamentoEditandoId = null;
+        
+        document.getElementById('form-orcamento').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btnSubmit = e.target.querySelector('button[type="submit"]');
+            btnSubmit.disabled = true;
+            const textoOriginal = btnSubmit.textContent;
+            btnSubmit.textContent = orcamentoEditandoId ? 'Salvando...' : 'Criando...';
+
+            try {
+                const mes = document.getElementById('orcamento-mes').value;
+                const categoriaId = document.getElementById('orcamento-categoria').value;
+                const valorLimite = parseFloat(document.getElementById('orcamento-limite').value);
+                
+                // Verificar se já existe orçamento para esta categoria neste mês
+                const orcamentosSnap = await getDocs(getUserCollection('orcamentos'));
+                let jaExiste = false;
+                
+                orcamentosSnap.forEach(doc => {
+                    const orc = doc.data();
+                    if (orc.mes === mes && orc.categoriaId === categoriaId && doc.id !== orcamentoEditandoId) {
+                        jaExiste = true;
+                    }
+                });
+                
+                if (jaExiste) {
+                    alert('Já existe um orçamento para esta categoria neste mês!');
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = textoOriginal;
+                    return;
+                }
+                
+                const dados = {
+                    mes: mes,
+                    categoriaId: categoriaId,
+                    valorLimite: valorLimite
+                };
+                
+                if (orcamentoEditandoId) {
+                    // EDITAR
+                    await updateDoc(doc(db, `users/${window.currentUser.uid}/orcamentos`, orcamentoEditandoId), dados);
+                    alert('Orçamento atualizado com sucesso!');
+                    orcamentoEditandoId = null;
+                } else {
+                    // CRIAR
+                    dados.dataCriacao = new Date().toISOString();
+                    await addDoc(getUserCollection('orcamentos'), dados);
+                    alert('Orçamento criado com sucesso!');
+                }
+
+                closeModal('modal-orcamento');
+                e.target.reset();
+                
+                // Resetar modal
+                document.querySelector('#modal-orcamento .modal-title').textContent = 'Novo Orçamento';
+                document.querySelector('#form-orcamento button[type="submit"]').textContent = 'Criar Orçamento';
+                
+                loadOrcamentos();
+            } catch (error) {
+                console.error('Erro ao salvar orçamento:', error);
+                alert('Erro ao salvar orçamento: ' + error.message);
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = textoOriginal;
+            }
+        });
+        
+        async function editarOrcamento(id) {
+            try {
+                const categoriasSnap = await getDocs(query(getUserCollection('categorias'), orderBy('nome')));
+                const categoriaSelect = document.getElementById('orcamento-categoria');
+                
+                categoriaSelect.innerHTML = '<option value="">Selecione uma categoria</option>';
+                
+                categoriasSnap.forEach(doc => {
+                    const cat = doc.data();
+                    if (cat.tipo === 'despesa') {
+                        categoriaSelect.innerHTML += `<option value="${doc.id}">${cat.icone} ${cat.nome}</option>`;
+                    }
+                });
+                
+                // Buscar orçamento
+                const orcamentosSnap = await getDocs(getUserCollection('orcamentos'));
+                let orcamentoData = null;
+                
+                orcamentosSnap.forEach(doc => {
+                    if (doc.id === id) {
+                        orcamentoData = doc.data();
+                    }
+                });
+                
+                if (!orcamentoData) {
+                    alert('Orçamento não encontrado!');
+                    return;
+                }
+                
+                // Preencher formulário
+                document.getElementById('orcamento-mes').value = orcamentoData.mes;
+                document.getElementById('orcamento-categoria').value = orcamentoData.categoriaId;
+                document.getElementById('orcamento-limite').value = orcamentoData.valorLimite;
+                
+                // Mudar título e botão
+                document.querySelector('#modal-orcamento .modal-title').textContent = 'Editar Orçamento';
+                document.querySelector('#form-orcamento button[type="submit"]').textContent = 'Salvar Alterações';
+                
+                orcamentoEditandoId = id;
+                openModal('modal-orcamento');
+            } catch (error) {
+                console.error('Erro ao carregar orçamento:', error);
+                alert('Erro ao carregar orçamento: ' + error.message);
+            }
+        }
+        
+        window.editarOrcamento = editarOrcamento;
+        
+        async function deletarOrcamento(id, nomeCategoria) {
+            if (!confirm(`Tem certeza que deseja deletar o orçamento da categoria "${nomeCategoria}"?\n\nEsta ação não pode ser desfeita!`)) {
+                return;
+            }
+            
+            try {
+                await deleteDoc(doc(db, `users/${window.currentUser.uid}/orcamentos`, id));
+                alert('Orçamento deletado com sucesso!');
+                loadOrcamentos();
+            } catch (error) {
+                console.error('Erro ao deletar orçamento:', error);
+                alert('Erro ao deletar orçamento: ' + error.message);
+            }
+        }
+        
+        window.deletarOrcamento = deletarOrcamento;
+        
+        // ===== RELATÓRIOS =====
+        async function loadRelatorios() {
+            const content = document.getElementById('page-content');
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Relatórios e Análises</h3>
+                    </div>
+                    <div class="loading">Carregando relatórios...</div>
+                </div>
+            `;
+
+            try {
+                const hoje = new Date();
+                const anoAtual = hoje.getFullYear();
+                const mesAtual = hoje.getMonth();
+                
+                // Buscar dados
+                const transacoesSnap = await getDocs(getUserCollection('transacoes'));
+                const categoriasSnap = await getDocs(getUserCollection('categorias'));
+                
+                const categorias = {};
+                categoriasSnap.forEach(doc => {
+                    categorias[doc.id] = doc.data();
+                });
+                
+                // Organizar dados por mês (últimos 6 meses)
+                const mesesData = {};
+                const gastosPorCategoria = {};
+                
+                for (let i = 5; i >= 0; i--) {
+                    const mes = new Date(anoAtual, mesAtual - i, 1);
+                    const mesKey = `${mes.getFullYear()}-${String(mes.getMonth() + 1).padStart(2, '0')}`;
+                    const mesNome = mes.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
+                    
+                    mesesData[mesKey] = {
+                        nome: mesNome,
+                        receitas: 0,
+                        despesas: 0,
+                        saldo: 0
+                    };
+                }
+                
+                // Processar transações
+                transacoesSnap.forEach(doc => {
+                    const trans = doc.data();
+                    if (trans.status !== 'pago') return;
+                    
+                    const dataTrans = new Date(trans.data + 'T00:00:00');
+                    const mesKey = `${dataTrans.getFullYear()}-${String(dataTrans.getMonth() + 1).padStart(2, '0')}`;
+                    
+                    if (mesesData[mesKey]) {
+                        const valor = parseFloat(trans.valor);
+                        
+                        if (trans.tipo === 'receita') {
+                            mesesData[mesKey].receitas += valor;
+                        } else {
+                            mesesData[mesKey].despesas += valor;
+                            
+                            // Gastos por categoria (mês atual)
+                            if (dataTrans.getMonth() === mesAtual && dataTrans.getFullYear() === anoAtual) {
+                                const catId = trans.categoriaId;
+                                if (!gastosPorCategoria[catId]) {
+                                    gastosPorCategoria[catId] = 0;
+                                }
+                                gastosPorCategoria[catId] += valor;
+                            }
+                        }
+                    }
+                });
+                
+                // Calcular saldo de cada mês
+                Object.values(mesesData).forEach(mes => {
+                    mes.saldo = mes.receitas - mes.despesas;
+                });
+                
+                // Preparar dados para gráficos
+                const labelsComparativo = Object.values(mesesData).map(m => m.nome);
+                const dataReceitas = Object.values(mesesData).map(m => m.receitas);
+                const dataDespesas = Object.values(mesesData).map(m => m.despesas);
+                const dataSaldos = Object.values(mesesData).map(m => m.saldo);
+                
+                // Dados do gráfico de pizza
+                const topCategorias = Object.entries(gastosPorCategoria)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 8);
+                
+                const labelsCategorias = topCategorias.map(([id, valor]) => {
+                    const cat = categorias[id] || { nome: 'Sem categoria' };
+                    return cat.nome;
+                });
+                
+                const dataCategorias = topCategorias.map(([id, valor]) => valor);
+                const coresCategorias = [
+                    '#ef4444', '#f59e0b', '#10b981', '#3b82f6', 
+                    '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'
+                ];
+                
+                // Estatísticas do mês atual
+                const mesAtualData = Object.values(mesesData)[5];
+                const totalDespesas = mesAtualData.despesas;
+                const totalReceitas = mesAtualData.receitas;
+                const balancoMes = mesAtualData.saldo;
+                const mediaGastoCategoria = totalDespesas / topCategorias.length || 0;
+                
+                content.innerHTML = `
+                    <!-- RESUMO DO MÊS -->
+                    <div class="card" style="margin-bottom: 25px;">
+                        <div class="card-header">
+                            <h3 class="card-title">📋 Resumo do Mês Atual</h3>
+                            <button class="btn btn-success" onclick="exportarPDF()">📄 Exportar PDF</button>
+                        </div>
+                        <div class="grid grid-4" style="padding: 0 10px;">
+                            <div style="text-align: center; padding: 20px;">
+                                <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 8px;">Total Receitas</div>
+                                <div style="font-size: 1.8rem; font-weight: 800; color: var(--success);">R$ ${totalReceitas.toFixed(2)}</div>
+                            </div>
+                            <div style="text-align: center; padding: 20px;">
+                                <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 8px;">Total Despesas</div>
+                                <div style="font-size: 1.8rem; font-weight: 800; color: var(--danger);">R$ ${totalDespesas.toFixed(2)}</div>
+                            </div>
+                            <div style="text-align: center; padding: 20px;">
+                                <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 8px;">Balanço</div>
+                                <div style="font-size: 1.8rem; font-weight: 800; color: ${balancoMes >= 0 ? 'var(--success)' : 'var(--danger)'};">
+                                    R$ ${Math.abs(balancoMes).toFixed(2)}
+                                </div>
+                            </div>
+                            <div style="text-align: center; padding: 20px;">
+                                <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 8px;">Média/Categoria</div>
+                                <div style="font-size: 1.8rem; font-weight: 800; color: var(--info);">R$ ${mediaGastoCategoria.toFixed(2)}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- GRÁFICOS -->
+                    <div class="grid grid-2" style="margin-bottom: 25px;">
+                        <!-- PIZZA: DESPESAS POR CATEGORIA -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">🍰 Despesas por Categoria</h3>
+                            </div>
+                            <div style="padding: 20px;">
+                                <canvas id="chartPizza" style="max-height: 300px;"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- COMPARATIVO MENSAL -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">📊 Receitas vs Despesas (6 meses)</h3>
+                            </div>
+                            <div style="padding: 20px;">
+                                <canvas id="chartComparativo" style="max-height: 300px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-2">
+                        <!-- EVOLUÇÃO DO SALDO -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">📈 Evolução do Balanço (6 meses)</h3>
+                            </div>
+                            <div style="padding: 20px;">
+                                <canvas id="chartLinha" style="max-height: 300px;"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- TOP 5 CATEGORIAS -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">🏆 Top 5 Maiores Despesas</h3>
+                            </div>
+                            <div style="padding: 20px;">
+                                ${topCategorias.slice(0, 5).map(([id, valor], index) => {
+                                    const cat = categorias[id] || { icone: '❓', nome: 'Sem categoria' };
+                                    const percentual = (valor / totalDespesas * 100).toFixed(1);
+                                    return `
+                                        <div style="margin-bottom: 15px;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                <div style="display: flex; align-items: center; gap: 10px;">
+                                                    <span style="font-size: 1.5rem;">${cat.icone}</span>
+                                                    <span style="font-weight: 600;">${index + 1}. ${cat.nome}</span>
+                                                </div>
+                                                <div style="text-align: right;">
+                                                    <div style="font-weight: 700; color: var(--danger);">R$ ${valor.toFixed(2)}</div>
+                                                    <div style="font-size: 0.8rem; color: var(--text-light);">${percentual}%</div>
+                                                </div>
+                                            </div>
+                                            <div style="background: var(--bg); height: 8px; border-radius: 10px; overflow: hidden;">
+                                                <div style="background: ${coresCategorias[index]}; height: 100%; width: ${percentual}%; border-radius: 10px;"></div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Criar gráficos após o HTML estar renderizado
+                setTimeout(() => {
+                    // Gráfico de Pizza
+                    const ctxPizza = document.getElementById('chartPizza');
+                    if (ctxPizza) {
+                        new Chart(ctxPizza, {
+                            type: 'doughnut',
+                            data: {
+                                labels: labelsCategorias,
+                                datasets: [{
+                                    data: dataCategorias,
+                                    backgroundColor: coresCategorias,
+                                    borderWidth: 2,
+                                    borderColor: '#fff'
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom',
+                                        labels: {
+                                            padding: 15,
+                                            font: { size: 12 }
+                                        }
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                const valor = context.raw;
+                                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                                const percentual = ((valor / total) * 100).toFixed(1);
+                                                return ` R$ ${valor.toFixed(2)} (${percentual}%)`;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Gráfico Comparativo
+                    const ctxComp = document.getElementById('chartComparativo');
+                    if (ctxComp) {
+                        new Chart(ctxComp, {
+                            type: 'bar',
+                            data: {
+                                labels: labelsComparativo,
+                                datasets: [
+                                    {
+                                        label: 'Receitas',
+                                        data: dataReceitas,
+                                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                                        borderColor: 'rgb(16, 185, 129)',
+                                        borderWidth: 2
+                                    },
+                                    {
+                                        label: 'Despesas',
+                                        data: dataDespesas,
+                                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                                        borderColor: 'rgb(239, 68, 68)',
+                                        borderWidth: 2
+                                    }
+                                ]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                return ` ${context.dataset.label}: R$ ${context.raw.toFixed(2)}`;
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value) {
+                                                return 'R$ ' + value.toFixed(0);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Gráfico de Linha
+                    const ctxLinha = document.getElementById('chartLinha');
+                    if (ctxLinha) {
+                        new Chart(ctxLinha, {
+                            type: 'line',
+                            data: {
+                                labels: labelsComparativo,
+                                datasets: [{
+                                    label: 'Balanço Mensal',
+                                    data: dataSaldos,
+                                    borderColor: 'rgb(99, 102, 241)',
+                                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                                    borderWidth: 3,
+                                    fill: true,
+                                    tension: 0.4,
+                                    pointRadius: 5,
+                                    pointBackgroundColor: 'rgb(99, 102, 241)',
+                                    pointBorderColor: '#fff',
+                                    pointBorderWidth: 2
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                const valor = context.raw;
+                                                return ` Balanco: R$ ${valor.toFixed(2)}`;
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        ticks: {
+                                            callback: function(value) {
+                                                return 'R$ ' + value.toFixed(0);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }, 100);
+                
+            } catch (error) {
+                console.error('Erro ao carregar relatórios:', error);
+                content.innerHTML = `
+                    <div class="card">
+                        <div style="padding: 20px; color: var(--danger);">
+                            Erro ao carregar relatórios: ${error.message}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // ===== EXPORTAR PDF =====
+        async function exportarPDF() {
+            try {
+                const btnExportar = document.querySelector('button[onclick="exportarPDF()"]');
+                if (btnExportar) {
+                    btnExportar.disabled = true;
+                    btnExportar.textContent = '⏳ Gerando PDF...';
+                }
+                
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                const hoje = new Date();
+                const mesAtual = hoje.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+                
+                // CABEÇALHO
+                pdf.setFillColor(99, 102, 241);
+                pdf.rect(0, 0, 210, 40, 'F');
+                
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(24);
+                pdf.setFont(undefined, 'bold');
+                pdf.text('Relatorio Financeiro', 105, 20, { align: 'center' });
+                
+                pdf.setFontSize(14);
+                pdf.setFont(undefined, 'normal');
+                pdf.text(mesAtual.charAt(0).toUpperCase() + mesAtual.slice(1), 105, 30, { align: 'center' });
+                
+                let yPos = 50;
+                
+                // Buscar dados novamente
+                const transacoesSnap = await getDocs(getUserCollection('transacoes'));
+                const categoriasSnap = await getDocs(getUserCollection('categorias'));
+                
+                const categorias = {};
+                categoriasSnap.forEach(doc => {
+                    categorias[doc.id] = doc.data();
+                });
+                
+                const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+                const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+                
+                let totalReceitas = 0;
+                let totalDespesas = 0;
+                const gastosPorCategoria = {};
+                const transacoesMes = [];
+                
+                transacoesSnap.forEach(doc => {
+                    const trans = { id: doc.id, ...doc.data() };
+                    const dataTrans = new Date(trans.data + 'T00:00:00');
+                    
+                    if (trans.status === 'pago' && dataTrans >= primeiroDiaMes && dataTrans <= ultimoDiaMes) {
+                        if (trans.tipo === 'receita') {
+                            totalReceitas += parseFloat(trans.valor);
+                        } else {
+                            totalDespesas += parseFloat(trans.valor);
+                            
+                            const catId = trans.categoriaId;
+                            if (!gastosPorCategoria[catId]) {
+                                gastosPorCategoria[catId] = 0;
+                            }
+                            gastosPorCategoria[catId] += parseFloat(trans.valor);
+                        }
+                        transacoesMes.push(trans);
+                    }
+                });
+                
+                const balanco = totalReceitas - totalDespesas;
+                
+                // RESUMO FINANCEIRO
+                pdf.setTextColor(0, 0, 0);
+                pdf.setFontSize(16);
+                pdf.setFont(undefined, 'bold');
+                pdf.text('Resumo Financeiro', 20, yPos);
+                yPos += 10;
+                
+                pdf.setFontSize(11);
+                pdf.setFont(undefined, 'normal');
+                
+                pdf.setTextColor(16, 185, 129);
+                pdf.text(`Receitas: R$ ${totalReceitas.toFixed(2)}`, 20, yPos);
+                
+                pdf.setTextColor(239, 68, 68);
+                pdf.text(`Despesas: R$ ${totalDespesas.toFixed(2)}`, 110, yPos);
+                yPos += 8;
+                
+                pdf.setTextColor(balanco >= 0 ? 16 : 239, balanco >= 0 ? 185 : 68, balanco >= 0 ? 129 : 68);
+                pdf.setFont(undefined, 'bold');
+                pdf.text(`Balanco: R$ ${Math.abs(balanco).toFixed(2)} ${balanco >= 0 ? '(Superavit)' : '(Deficit)'}`, 20, yPos);
+                yPos += 15;
+                
+                // TOP 5 CATEGORIAS
+                pdf.setTextColor(0, 0, 0);
+                pdf.setFontSize(16);
+                pdf.setFont(undefined, 'bold');
+                pdf.text('Top 5 Maiores Despesas', 20, yPos);
+                yPos += 10;
+                
+                const topCategorias = Object.entries(gastosPorCategoria)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5);
+                
+                pdf.setFontSize(11);
+                pdf.setFont(undefined, 'normal');
+                
+                topCategorias.forEach(([catId, valor], index) => {
+                    const cat = categorias[catId] || { nome: 'Sem categoria' };
+                    const percentual = ((valor / totalDespesas) * 100).toFixed(1);
+                    
+                    pdf.setTextColor(0, 0, 0);
+                    pdf.text(`${index + 1}. ${cat.nome}`, 20, yPos);
+                    
+                    pdf.setTextColor(239, 68, 68);
+                    pdf.text(`R$ ${valor.toFixed(2)} (${percentual}%)`, 150, yPos, { align: 'right' });
+                    
+                    yPos += 7;
+                });
+                
+                yPos += 10;
+                
+                // ÚLTIMAS 10 TRANSAÇÕES
+                if (yPos > 240) {
+                    pdf.addPage();
+                    yPos = 20;
+                }
+                
+                pdf.setTextColor(0, 0, 0);
+                pdf.setFontSize(16);
+                pdf.setFont(undefined, 'bold');
+                pdf.text('Ultimas Transacoes', 20, yPos);
+                yPos += 10;
+                
+                pdf.setFontSize(10);
+                pdf.setFont(undefined, 'normal');
+                
+                // Cabeçalho da tabela
+                pdf.setFillColor(240, 240, 240);
+                pdf.rect(15, yPos - 5, 180, 7, 'F');
+                
+                pdf.setFont(undefined, 'bold');
+                pdf.text('Data', 20, yPos);
+                pdf.text('Descricao', 45, yPos);
+                pdf.text('Categoria', 110, yPos);
+                pdf.text('Valor', 170, yPos, { align: 'right' });
+                yPos += 8;
+                
+                pdf.setFont(undefined, 'normal');
+                
+                transacoesMes.sort((a, b) => new Date(b.data) - new Date(a.data))
+                    .slice(0, 10)
+                    .forEach((trans, index) => {
+                        if (yPos > 280) {
+                            pdf.addPage();
+                            yPos = 20;
+                        }
+                        
+                        const cat = categorias[trans.categoriaId] || { nome: 'Sem categoria' };
+                        const dataBR = new Date(trans.data + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                        
+                        pdf.setTextColor(0, 0, 0);
+                        pdf.text(dataBR, 20, yPos);
+                        pdf.text(trans.descricao.substring(0, 25), 45, yPos);
+                        pdf.text(cat.nome.substring(0, 20), 110, yPos);
+                        
+                        const cor = trans.tipo === 'receita' ? [16, 185, 129] : [239, 68, 68];
+                        pdf.setTextColor(...cor);
+                        const sinal = trans.tipo === 'receita' ? '+' : '-';
+                        pdf.text(`${sinal} R$ ${parseFloat(trans.valor).toFixed(2)}`, 170, yPos, { align: 'right' });
+                        
+                        yPos += 7;
+                    });
+                
+                // RODAPÉ
+                pdf.setFontSize(8);
+                pdf.setTextColor(150, 150, 150);
+                pdf.text(`Gerado em ${hoje.toLocaleDateString('pt-BR')} as ${hoje.toLocaleTimeString('pt-BR')}`, 105, 290, { align: 'center' });
+                pdf.text('FinanControl - Controle Financeiro', 105, 285, { align: 'center' });
+                
+                // Salvar PDF
+                const nomeArquivo = `relatorio-${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}.pdf`;
+                pdf.save(nomeArquivo);
+                
+                if (btnExportar) {
+                    btnExportar.disabled = false;
+                    btnExportar.textContent = '📄 Exportar PDF';
+                }
+                
+                alert('✅ PDF gerado com sucesso!');
+                
+            } catch (error) {
+                console.error('Erro ao gerar PDF:', error);
+                alert('Erro ao gerar PDF: ' + error.message);
+                
+                const btnExportar = document.querySelector('button[onclick="exportarPDF()"]');
+                if (btnExportar) {
+                    btnExportar.disabled = false;
+                    btnExportar.textContent = '📄 Exportar PDF';
+                }
+            }
+        }
+        
+        window.exportarPDF = exportarPDF;
+        
+        // ===== NOTIFICAÇÕES DE VENCIMENTO =====
+        async function verificarVencimentos() {
+            try {
+                const hoje = new Date();
+                const transacoesSnap = await getDocs(getUserCollection('transacoes'));
+                
+                let vencimentosProximos = 0;
+                let vencimentosHoje = 0;
+                let vencimentosAtrasados = 0;
+                
+                transacoesSnap.forEach(doc => {
+                    const trans = doc.data();
+                    if (trans.status === 'pendente' && trans.tipo === 'despesa') {
+                        const dataTrans = new Date(trans.data + 'T00:00:00');
+                        const diasAte = Math.ceil((dataTrans - hoje) / (1000 * 60 * 60 * 24));
+                        
+                        if (diasAte < 0) {
+                            vencimentosAtrasados++;
+                        } else if (diasAte === 0) {
+                            vencimentosHoje++;
+                        } else if (diasAte <= 7) {
+                            vencimentosProximos++;
+                        }
+                    }
+                });
+                
+                const totalAlertas = vencimentosAtrasados + vencimentosHoje + vencimentosProximos;
+                
+                // Atualizar badge no menu de Transações
+                const transacoesLink = document.querySelector('[data-page="transacoes"]');
+                if (transacoesLink) {
+                    let badge = transacoesLink.querySelector('.notif-badge');
+                    if (totalAlertas > 0) {
+                        if (!badge) {
+                            badge = document.createElement('span');
+                            badge.className = 'notif-badge';
+                            badge.style.cssText = 'position: absolute; top: 10px; right: 15px; background: #ef4444; color: white; border-radius: 12px; padding: 2px 8px; font-size: 0.75rem; font-weight: 700; min-width: 20px; text-align: center;';
+                            transacoesLink.appendChild(badge);
+                        }
+                        badge.textContent = totalAlertas;
+                    } else if (badge) {
+                        badge.remove();
+                    }
+                }
+                
+                return {
+                    total: totalAlertas,
+                    atrasados: vencimentosAtrasados,
+                    hoje: vencimentosHoje,
+                    proximos: vencimentosProximos
+                };
+            } catch (error) {
+                console.error('Erro ao verificar vencimentos:', error);
+                return { total: 0, atrasados: 0, hoje: 0, proximos: 0 };
+            }
+        }
+        
+        async function mostrarAlertaVencimentos() {
+            const alertas = await verificarVencimentos();
+            
+            if (alertas.total > 0) {
+                let mensagem = '';
+                
+                if (alertas.atrasados > 0) {
+                    mensagem += `🔴 ${alertas.atrasados} conta(s) vencida(s)! `;
+                }
+                if (alertas.hoje > 0) {
+                    mensagem += `🟡 ${alertas.hoje} vence(m) hoje! `;
+                }
+                if (alertas.proximos > 0) {
+                    mensagem += `🟠 ${alertas.proximos} vence(m) em até 7 dias!`;
+                }
+                
+                // Criar alerta no dashboard
+                const pageContent = document.getElementById('page-content');
+                if (pageContent && !pageContent.querySelector('.alert-vencimento')) {
+                    const alertHTML = `
+                        <div class="alert-vencimento" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+                            <div style="font-size: 2rem;">⚠️</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 700; color: #92400e; margin-bottom: 5px; font-size: 1.1rem;">Atenção aos Vencimentos!</div>
+                                <div style="color: #78350f; font-size: 0.9rem;">${mensagem}</div>
+                            </div>
+                            <button onclick="document.querySelector('[data-page=transacoes]').click()" class="btn btn-warning" style="background: #f59e0b;">
+                                Ver Pendentes
+                            </button>
+                        </div>
+                    `;
+                    pageContent.insertAdjacentHTML('afterbegin', alertHTML);
+                }
+                
+                // Notificação do navegador (se permitido)
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('💰 FinanControl - Alerta de Vencimento', {
+                        body: mensagem,
+                        icon: 'https://cdn-icons-png.flaticon.com/512/3135/3135706.png',
+                        badge: 'https://cdn-icons-png.flaticon.com/512/3135/3135706.png'
+                    });
+                }
+            }
+        }
+        
+        // Pedir permissão para notificações
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+        
+        // Verificar vencimentos ao carregar o dashboard
+        const originalLoadDashboard = loadDashboard;
+        loadDashboard = async function() {
+            await originalLoadDashboard();
+            setTimeout(() => mostrarAlertaVencimentos(), 500);
+        };
+        
+        // Verificar vencimentos a cada 5 minutos
+        setInterval(() => {
+            if (window.currentUser) {
+                verificarVencimentos();
+            }
+        }, 5 * 60 * 1000);
+        
+        // ===== AUTENTICAÇÃO =====
+        function mostrarLogin() {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('cadastro-form').style.display = 'none';
+            document.getElementById('recuperar-form').style.display = 'none';
+        }
+        
+        function mostrarCadastro() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('cadastro-form').style.display = 'block';
+            document.getElementById('recuperar-form').style.display = 'none';
+        }
+        
+        function mostrarRecuperarSenha() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('cadastro-form').style.display = 'none';
+            document.getElementById('recuperar-form').style.display = 'block';
+        }
+        
+        window.mostrarLogin = mostrarLogin;
+        window.mostrarCadastro = mostrarCadastro;
+        window.mostrarRecuperarSenha = mostrarRecuperarSenha;
+        
+        // LOGIN
+        document.getElementById('form-login').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btnSubmit = e.target.querySelector('button[type="submit"]');
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = 'Entrando...';
+            
+            const email = document.getElementById('login-email').value;
+            const senha = document.getElementById('login-senha').value;
+            
+            try {
+                await signInWithEmailAndPassword(auth, email, senha);
+                // O onAuthStateChanged vai lidar com o resto
+            } catch (error) {
+                console.error('Erro no login:', error);
+                let mensagem = 'Erro ao fazer login';
+                
+                if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                    mensagem = 'Email ou senha incorretos';
+                } else if (error.code === 'auth/invalid-email') {
+                    mensagem = 'Email inválido';
+                } else if (error.code === 'auth/too-many-requests') {
+                    mensagem = 'Muitas tentativas. Tente novamente mais tarde';
+                }
+                
+                alert(mensagem);
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = 'Entrar';
+            }
+        });
+        
+        // CADASTRO
+        document.getElementById('form-cadastro').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btnSubmit = e.target.querySelector('button[type="submit"]');
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = 'Criando conta...';
+            
+            const nome = document.getElementById('cadastro-nome').value;
+            const email = document.getElementById('cadastro-email').value;
+            const senha = document.getElementById('cadastro-senha').value;
+            
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+                
+                // Salvar nome do usuário no Firestore
+                await addDoc(collection(db, `users/${userCredential.user.uid}/profile`), {
+                    nome: nome,
+                    email: email,
+                    dataCriacao: new Date().toISOString()
+                });
+                
+                alert('✅ Conta criada com sucesso!\n\nVocê já pode começar a usar o FinanControl!');
+                // O onAuthStateChanged vai lidar com o resto
+            } catch (error) {
+                console.error('Erro no cadastro:', error);
+                let mensagem = 'Erro ao criar conta';
+                
+                if (error.code === 'auth/email-already-in-use') {
+                    mensagem = 'Este email já está em uso';
+                } else if (error.code === 'auth/invalid-email') {
+                    mensagem = 'Email inválido';
+                } else if (error.code === 'auth/weak-password') {
+                    mensagem = 'Senha muito fraca. Use no mínimo 6 caracteres';
+                }
+                
+                alert(mensagem);
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = 'Criar Conta';
+            }
+        });
+        
+        // RECUPERAR SENHA
+        document.getElementById('form-recuperar').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btnSubmit = e.target.querySelector('button[type="submit"]');
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = 'Enviando...';
+            
+            const email = document.getElementById('recuperar-email').value;
+            
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert('✅ Email de recuperação enviado!\n\nVerifique sua caixa de entrada.');
+                mostrarLogin();
+            } catch (error) {
+                console.error('Erro ao recuperar senha:', error);
+                let mensagem = 'Erro ao enviar email';
+                
+                if (error.code === 'auth/user-not-found') {
+                    mensagem = 'Email não encontrado';
+                } else if (error.code === 'auth/invalid-email') {
+                    mensagem = 'Email inválido';
+                }
+                
+                alert(mensagem);
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = 'Enviar Link';
+            }
+        });
+        
+        // LOGOUT
+        async function fazerLogout() {
+            if (!confirm('Deseja realmente sair?')) {
+                return;
+            }
+            
+            try {
+                await signOut(auth);
+                // O onAuthStateChanged vai lidar com o resto
+            } catch (error) {
+                console.error('Erro ao fazer logout:', error);
+                alert('Erro ao sair: ' + error.message);
+            }
+        }
+        
+        window.fazerLogout = fazerLogout;
+        
+        // VERIFICAR ESTADO DE AUTENTICAÇÃO
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Usuário logado
+                window.currentUser = user;
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('app-container').style.display = 'flex';
+                document.getElementById('user-email').textContent = user.email;
+                
+                // Carregar dashboard
+                setTimeout(() => {
+                    loadDashboard();
+                    verificarVencimentos();
+                }, 100);
+            } else {
+                // Usuário não logado
+                window.currentUser = null;
+                document.getElementById('auth-screen').style.display = 'flex';
+                document.getElementById('app-container').style.display = 'none';
+            }
+        });
+
+        // ===== HELPERS =====
+        function getUserCollection(collectionName) {
+            if (!window.currentUser) {
+                throw new Error('Usuário não autenticado');
+            }
+            return collection(db, `users/${window.currentUser.uid}/${collectionName}`);
+        }
+        
+        function formatTipo(tipo) {
+            const tipos = {
+                'corrente': 'Conta Corrente',
+                'poupanca': 'Poupança',
+                'carteira': 'Carteira',
+                'investimento': 'Investimento',
+                'cartaoCredito': '💳 Cartão de Crédito'
+            };
+            return tipos[tipo] || tipo;
+        }
+
+        function adjustColor(color, percent) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                (B < 255 ? B < 1 ? 0 : B : 255))
+                .toString(16).slice(1);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString + 'T00:00:00');
+            return date.toLocaleDateString('pt-BR');
+        }
+    </script>
+</body>
+</html>
