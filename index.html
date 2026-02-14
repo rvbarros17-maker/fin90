@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>💰 Controle Financeiro</title>
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#10b981">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FinanControl">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%236366f1'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>💰</text></svg>">
+    
     <style>
         * {
             margin: 0;
@@ -12,7 +21,7 @@
         }
 
         :root {
-            --primary: #6366f1;
+            --primary: #10b981;
             --primary-dark: #4f46e5;
             --success: #10b981;
             --danger: #ef4444;
@@ -55,7 +64,7 @@
         .sidebar-header {
             padding: 30px 25px;
             border-bottom: 1px solid var(--border);
-            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            background: linear-gradient(135deg, #10b98115 0%, #0ea5e915 100%);
         }
 
         .sidebar-header h2 {
@@ -538,10 +547,10 @@
 </head>
 <body>
     <!-- TELA DE AUTENTICAÇÃO -->
-    <div id="auth-screen" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div id="auth-screen" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #10b981 0%, #0ea5e9 100%);">
         <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 400px; width: 90%;">
             <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="font-size: 3rem; margin-bottom: 10px;">💰</h1>
+                <img src="icone.png" alt="Fin90" style="width: 120px; height: 120px; margin-bottom: 10px;">
                 <h2 style="color: var(--primary); margin-bottom: 5px;">FinanControl</h2>
                 <p style="color: var(--text-light); font-size: 0.9rem;">Controle suas finanças de forma simples</p>
             </div>
@@ -610,8 +619,9 @@
     <div class="app-container" id="app-container" style="display: none;">
         <!-- SIDEBAR -->
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>💰 FinanControl</h2>
+            <div class="sidebar-header" style="display: flex; align-items: center; gap: 10px;">
+                <img src="icone.png" alt="Fin90" style="width: 40px; height: 40px;">
+                <h2>Fin90</h2>
             </div>
             <nav class="sidebar-nav">
                 <div class="nav-link active" data-page="dashboard">
@@ -698,7 +708,7 @@
                     <div class="form-group">
                         <label class="form-label">Cor</label>
                         <div class="color-grid" id="conta-cores">
-                            <div class="color-option selected" style="background: #6366f1" data-cor="#6366f1"></div>
+                            <div class="color-option selected" style="background: #10b981" data-cor="#10b981"></div>
                             <div class="color-option" style="background: #10b981" data-cor="#10b981"></div>
                             <div class="color-option" style="background: #f59e0b" data-cor="#f59e0b"></div>
                             <div class="color-option" style="background: #ef4444" data-cor="#ef4444"></div>
@@ -975,8 +985,33 @@
         window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
         window.signInWithEmailAndPassword = signInWithEmailAndPassword;
         window.signOut = signOut;
-        window.onAuthStateChanged = onAuthStateChanged;
         window.sendPasswordResetEmail = sendPasswordResetEmail;
+        
+        // VERIFICAR ESTADO DE AUTENTICAÇÃO
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Usuário logado
+                window.currentUser = user;
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('app-container').style.display = 'flex';
+                document.getElementById('user-email').textContent = user.email;
+                
+                // Carregar dashboard após tudo estar pronto
+                setTimeout(() => {
+                    if (typeof loadDashboard === 'function') {
+                        loadDashboard();
+                    }
+                    if (typeof verificarVencimentos === 'function') {
+                        verificarVencimentos();
+                    }
+                }, 500);
+            } else {
+                // Usuário não logado
+                window.currentUser = null;
+                document.getElementById('auth-screen').style.display = 'flex';
+                document.getElementById('app-container').style.display = 'none';
+            }
+        });
     </script>
 
     <script>
@@ -1193,7 +1228,7 @@
                 
                 content.innerHTML = `
                     <div class="grid grid-4" style="margin-bottom: 30px;">
-                        <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px;">
+                        <div class="card" style="background: linear-gradient(135deg, #10b981 0%, #0ea5e9 100%); color: white; padding: 25px;">
                             <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 10px;">💰 Saldo Total</div>
                             <div style="font-size: 2.2rem; font-weight: 800; margin-bottom: 10px;">R$ ${saldoTotal.toFixed(2)}</div>
                             <div style="font-size: 0.85rem; opacity: 0.8;">Todas as contas</div>
@@ -1522,7 +1557,7 @@
         }
 
         // ===== FORM CONTA =====
-        let corSelecionada = '#6366f1';
+        let corSelecionada = '#10b981';
 
         document.querySelectorAll('.color-option').forEach(option => {
             option.addEventListener('click', function() {
@@ -1577,7 +1612,7 @@
 
                 closeModal('modal-conta');
                 e.target.reset();
-                corSelecionada = '#6366f1';
+                corSelecionada = '#10b981';
                 document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
                 document.querySelector('.color-option').classList.add('selected');
                 
@@ -3853,28 +3888,6 @@
         }
         
         window.fazerLogout = fazerLogout;
-        
-        // VERIFICAR ESTADO DE AUTENTICAÇÃO
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // Usuário logado
-                window.currentUser = user;
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('app-container').style.display = 'flex';
-                document.getElementById('user-email').textContent = user.email;
-                
-                // Carregar dashboard
-                setTimeout(() => {
-                    loadDashboard();
-                    verificarVencimentos();
-                }, 100);
-            } else {
-                // Usuário não logado
-                window.currentUser = null;
-                document.getElementById('auth-screen').style.display = 'flex';
-                document.getElementById('app-container').style.display = 'none';
-            }
-        });
 
         // ===== HELPERS =====
         function getUserCollection(collectionName) {
@@ -3911,6 +3924,39 @@
             const date = new Date(dateString + 'T00:00:00');
             return date.toLocaleDateString('pt-BR');
         }
+    </script>
+    
+    <!-- PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('✅ PWA: Service Worker registrado com sucesso!', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('❌ PWA: Falha ao registrar Service Worker:', error);
+                    });
+            });
+        }
+        
+        // Detectar se o app pode ser instalado
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Previne o mini-infobar no mobile
+            e.preventDefault();
+            // Guarda o evento para disparar depois
+            deferredPrompt = e;
+            
+            // Mostra botão de instalação se quiser adicionar depois
+            console.log('💡 App pode ser instalado! Veja no menu do navegador.');
+        });
+        
+        window.addEventListener('appinstalled', () => {
+            console.log('✅ PWA instalado com sucesso!');
+            deferredPrompt = null;
+        });
     </script>
 </body>
 </html>

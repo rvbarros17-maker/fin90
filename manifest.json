@@ -1,0 +1,26 @@
+{
+  "name": "Fin90 - Controle Financeiro",
+  "short_name": "Fin90",
+  "description": "Controle suas finanças de forma simples e profissional",
+  "start_url": "/financeiro.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icone.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icone.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "productivity"],
+  "screenshots": []
+}
