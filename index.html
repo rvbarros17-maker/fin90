@@ -822,6 +822,7 @@
                             <option value="despesaFixa">💵 Despesa Fixa (ex: Aluguel, Netflix)</option>
                             <option value="despesaVariavel">💡 Despesa Variável (ex: Luz, Água)</option>
                             <option value="faturaCartao">💳 Fatura de Cartão (valor variável)</option>
+                            <option value="financiamento">🏦 Financiamento/Empréstimo (parcelas com prazo)</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -852,6 +853,20 @@
                         <input type="number" class="form-input" id="recorrente-dia" min="1" max="31" placeholder="Ex: 5, 10, 15" required>
                         <small style="color: var(--text-light); font-size: 0.85rem; margin-top: 5px; display: block;">
                             A transação será gerada todo dia escolhido do mês
+                        </small>
+                    </div>
+                    <div class="form-group" id="financiamento-fields" style="display: none;">
+                        <label class="form-label">Número Total de Parcelas</label>
+                        <input type="number" class="form-input" id="financiamento-parcelas" min="2" max="360" placeholder="Ex: 48">
+                        <small style="color: var(--text-light); font-size: 0.85rem; margin-top: 5px; display: block;">
+                            Quantas parcelas no total (ex: 48 meses = 4 anos)
+                        </small>
+                    </div>
+                    <div class="form-group" id="financiamento-inicio-group" style="display: none;">
+                        <label class="form-label">Mês/Ano da Primeira Parcela</label>
+                        <input type="month" class="form-input" id="financiamento-inicio" placeholder="Ex: 2026-01">
+                        <small style="color: var(--text-light); font-size: 0.85rem; margin-top: 5px; display: block;">
+                            Quando começa a pagar (primeira parcela)
                         </small>
                     </div>
                     <button type="submit" class="btn btn-primary" style="width: 100%">Criar Recorrente</button>
@@ -1711,11 +1726,36 @@
             const tipo = document.getElementById('recorrente-tipo').value;
             const valorInput = document.getElementById('recorrente-valor');
             const valorHint = document.getElementById('recorrente-valor-hint');
+            const financiamentoFields = document.getElementById('financiamento-fields');
+            const financiamentoInicioGroup = document.getElementById('financiamento-inicio-group');
+            const financiamentoParcelas = document.getElementById('financiamento-parcelas');
+            const financiamentoInicio = document.getElementById('financiamento-inicio');
+            
+            // Resetar campos de financiamento
+            if (financiamentoFields) {
+                financiamentoFields.style.display = 'none';
+                financiamentoInicioGroup.style.display = 'none';
+                financiamentoParcelas.required = false;
+                financiamentoInicio.required = false;
+            }
             
             if (tipo === 'despesaFixa') {
                 valorInput.required = true;
                 valorInput.placeholder = 'Ex: 1200.00';
                 valorHint.textContent = 'Informe o valor fixo mensal';
+            } else if (tipo === 'financiamento') {
+                valorInput.required = true;
+                valorInput.placeholder = 'Ex: 800.00';
+                valorHint.textContent = 'Valor fixo da parcela mensal';
+                financiamentoFields.style.display = 'block';
+                financiamentoInicioGroup.style.display = 'block';
+                financiamentoParcelas.required = true;
+                financiamentoInicio.required = true;
+                
+                // Setar mês atual como padrão
+                const hoje = new Date();
+                const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+                financiamentoInicio.value = mesAtual;
             } else {
                 valorInput.required = false;
                 valorInput.placeholder = 'Deixe em 0 (valor variável)';
@@ -1750,6 +1790,13 @@
                     diaVencimento: parseInt(document.getElementById('recorrente-dia').value),
                     ativa: true
                 };
+                
+                // Adicionar campos específicos de financiamento
+                if (tipo === 'financiamento') {
+                    dados.totalParcelas = parseInt(document.getElementById('financiamento-parcelas').value);
+                    dados.mesInicio = document.getElementById('financiamento-inicio').value;
+                    dados.parcelasPagas = 0; // Contador de parcelas pagas
+                }
                 
                 if (recorrenteEditandoId) {
                     // EDITAR
@@ -1954,6 +2001,10 @@
                         tipoTexto = 'Fatura de Cartão';
                         tipoIcon = '💳';
                         tipoCor = 'var(--info)';
+                    } else if (rec.tipo === 'financiamento') {
+                        tipoTexto = 'Financiamento';
+                        tipoIcon = '🏦';
+                        tipoCor = '#0ea5e9';
                     } else {
                         tipoTexto = 'Despesa Variável';
                         tipoIcon = '💡';
@@ -1963,6 +2014,29 @@
                     const valorTexto = rec.valorFixo && parseFloat(rec.valorFixo) > 0 
                         ? `R$ ${parseFloat(rec.valorFixo).toFixed(2)}` 
                         : 'Valor variável';
+                    
+                    // Progresso do financiamento
+                    let progressoHTML = '';
+                    if (rec.tipo === 'financiamento') {
+                        const parcelasPagas = parseInt(rec.parcelasPagas || 0);
+                        const totalParcelas = parseInt(rec.totalParcelas || 0);
+                        const percentual = (parcelasPagas / totalParcelas) * 100;
+                        const parcelasRestantes = totalParcelas - parcelasPagas;
+                        
+                        progressoHTML = `
+                            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-size: 0.85rem; font-weight: 600;">Progresso: ${parcelasPagas}/${totalParcelas} parcelas</span>
+                                    <span style="font-size: 0.85rem; font-weight: 600; color: ${parcelasRestantes === 0 ? 'var(--success)' : tipoCor};">
+                                        ${parcelasRestantes === 0 ? '✅ Finalizado' : `${parcelasRestantes} restantes`}
+                                    </span>
+                                </div>
+                                <div style="background: var(--bg); height: 10px; border-radius: 10px; overflow: hidden;">
+                                    <div style="background: ${tipoCor}; height: 100%; width: ${percentual}%; transition: width 0.3s; border-radius: 10px;"></div>
+                                </div>
+                            </div>
+                        `;
+                    }
                     
                     recorrentesHTML += `
                         <div class="categoria-item" style="border-left: 4px solid ${tipoCor};">
@@ -1985,6 +2059,7 @@
                                             : `⏰ Última geração: ${ultimaGeracao}`
                                         }
                                     </div>
+                                    ${progressoHTML}
                                 </div>
                                 <div style="text-align: right; margin-right: 20px;">
                                     <div style="font-size: 1.3rem; font-weight: 700; color: ${tipoCor};">${valorTexto}</div>
@@ -2359,6 +2434,21 @@
                     const rec = docSnap.data();
                     const recId = docSnap.id;
                     
+                    // FINANCIAMENTO: verificar se já terminou o prazo
+                    if (rec.tipo === 'financiamento') {
+                        const [anoInicio, mesInicio] = rec.mesInicio.split('-').map(Number);
+                        const totalParcelas = parseInt(rec.totalParcelas);
+                        const parcelasPagas = parseInt(rec.parcelasPagas || 0);
+                        
+                        // Calcular quantos meses se passaram desde o início
+                        const mesesPassados = (anoAtual - anoInicio) * 12 + (mesAtual - (mesInicio - 1));
+                        
+                        // Se já pagou todas as parcelas, pular
+                        if (parcelasPagas >= totalParcelas || mesesPassados > totalParcelas) {
+                            continue;
+                        }
+                    }
+                    
                     // Verificar se já foi gerada este mês
                     let jaGerada = false;
                     if (rec.ultimaGeracao) {
@@ -2385,6 +2475,7 @@
                     // Determinar tipo de transação e valor
                     let tipoTransacao = '';
                     let valorTransacao = 0;
+                    let descricaoTransacao = rec.descricao;
                     
                     if (rec.tipo === 'receitaVariavel') {
                         tipoTransacao = 'receita';
@@ -2395,6 +2486,11 @@
                     } else if (rec.tipo === 'faturaCartao') {
                         tipoTransacao = 'despesa';
                         valorTransacao = 0; // Usuário preenche depois
+                    } else if (rec.tipo === 'financiamento') {
+                        tipoTransacao = 'despesa';
+                        valorTransacao = parseFloat(rec.valorFixo || 0);
+                        const parcelaAtual = parseInt(rec.parcelasPagas || 0) + 1;
+                        descricaoTransacao = `${rec.descricao} (${parcelaAtual}/${rec.totalParcelas})`;
                     } else { // despesaVariavel
                         tipoTransacao = 'despesa';
                         valorTransacao = 0; // Usuário preenche depois
@@ -2403,7 +2499,7 @@
                     // Criar transação
                     await addDoc(getUserCollection('transacoes'), {
                         tipo: tipoTransacao,
-                        descricao: rec.descricao,
+                        descricao: descricaoTransacao,
                         valor: valorTransacao,
                         categoriaId: rec.categoriaId,
                         contaId: rec.contaId,
@@ -2413,10 +2509,16 @@
                         dataCriacao: new Date().toISOString()
                     });
                     
-                    // Atualizar data da última geração
-                    await updateDoc(doc(db, `users/${window.currentUser.uid}/recorrentes`, recId), {
+                    // Atualizar data da última geração e contador de parcelas (se financiamento)
+                    const updateData = {
                         ultimaGeracao: new Date().toISOString()
-                    });
+                    };
+                    
+                    if (rec.tipo === 'financiamento') {
+                        updateData.parcelasPagas = parseInt(rec.parcelasPagas || 0) + 1;
+                    }
+                    
+                    await updateDoc(doc(db, `users/${window.currentUser.uid}/recorrentes`, recId), updateData);
                     
                     totalGeradas++;
                 }
